@@ -1,0 +1,52 @@
+# Test INSERT-1
+#
+# Insert a record into a database with a single table:
+#
+#   CREATE TABLE products(code INTEGER PRIMARY KEY, name TEXT, price INTEGER)
+#
+# The table is empty. This is the database created by create-table.test
+#
+# This program is equivalent to running:
+#
+#   INSERT INTO products VALUES(1, "Hard Drive", 240)
+#
+# Registers:
+# 0: Contains the "products" table root page (2)
+# 1: Contains the key of the record
+# 2 through 4: Used to create the new record to be inserted in the table
+# 5: Stores the record
+
+USE products-empty.cdb
+
+%%
+# Open the schema table using cursor 0
+Integer      2  0  _  _  
+OpenWrite    0  0  3  _
+
+# Create the record
+Integer      1    1  _  _
+Null         _    2  _  _
+String       10   3  _  "Hard Drive"
+Integer      240  4  _  _
+
+MakeRecord   2  3  5  _
+
+# Insert the new record
+Insert       0  5  1  _
+
+# Close the cursor
+Close        0  _  _  _
+
+%%
+
+# No query results
+
+%%
+
+R_0 integer 2
+R_1 integer 1
+R_2 null
+R_3 string "Hard Drive"
+R_4 integer 240
+R_5 binary
+ 

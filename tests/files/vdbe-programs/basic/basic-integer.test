@@ -1,0 +1,18 @@
+# Test BASIC-INTEGER
+#
+# Store an integer in a register
+
+NO DBFILE
+
+%%
+
+Integer 42  5   _   _
+
+%%
+
+# No query results
+
+%%
+
+R_5 integer 42
+    

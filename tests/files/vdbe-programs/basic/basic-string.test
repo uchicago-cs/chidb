@@ -1,0 +1,18 @@
+# Test BASIC-STRING
+#
+# Store a string in a register
+
+NO DBFILE
+
+%%
+
+String 13  5   _   "Hello, world!"
+
+%%
+
+# No query results
+
+%%
+
+R_5 string "Hello, world!"
+    
