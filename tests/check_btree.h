@@ -10,13 +10,13 @@
 #define TESTFILE_CORRUPT2 ("corruptheader-2.cdb") // Corrupt header, in devious ways
 #define TESTFILE_CORRUPT3 ("corruptheader-3.cdb") // Corrupt header, in even more devious ways
 
-extern key_t file1_keys[];
+extern chidb_key_t file1_keys[];
 extern char *file1_values[];
-extern key_t file1_nvalues;
+extern chidb_key_t file1_nvalues;
 
-extern key_t bigfile_pkeys[];
-extern key_t bigfile_ikeys[];
-extern key_t bigfile_nvalues;
+extern chidb_key_t bigfile_pkeys[];
+extern chidb_key_t bigfile_ikeys[];
+extern chidb_key_t bigfile_nvalues;
 
 TCase* make_btree_1a_tc(void);
 TCase* make_btree_1b_tc(void);
@@ -44,12 +44,12 @@ void test_init_empty(BTree *bt, uint8_t type);
 
 void test_new_node(BTree *bt, uint8_t type);
 
-void test_values(BTree *bt, key_t *keys, char **values, key_t nkeys);
+void test_values(BTree *bt, chidb_key_t *keys, char **values, chidb_key_t nkeys);
 
 void insert_bigfile(chidb *db, int i);
 
 void test_bigfile(chidb *db);
 
-int chidb_Btree_findInIndex(BTree *bt, npage_t nroot, key_t ikey, key_t *pkey);
+int chidb_Btree_findInIndex(BTree *bt, npage_t nroot, chidb_key_t ikey, chidb_key_t *pkey);
 
 void test_index_bigfile(chidb *db, npage_t index_nroot);

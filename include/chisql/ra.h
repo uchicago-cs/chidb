@@ -29,6 +29,8 @@ enum RA_Type {
    RA_RHO_EXPR,
 };
 
+typedef struct RA_s RA_t;
+
 struct RA_s {
    enum RA_Type t;
    union {

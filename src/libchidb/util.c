@@ -139,7 +139,7 @@ int chidb_Btree_print(BTree *bt, npage_t npage, fBTreeCellPrinter printer, bool 
     }
     else if (btn->type == PGTYPE_TABLE_INTERNAL)
     {
-        key_t last_key;
+    	chidb_key_t last_key;
 
         if(verbose)
             printf("Internal node (page %i)\n", btn->page->npage);
@@ -172,7 +172,7 @@ int chidb_Btree_print(BTree *bt, npage_t npage, fBTreeCellPrinter printer, bool 
     }
     else if (btn->type == PGTYPE_INDEX_INTERNAL)
     {
-        key_t last_key;
+    	chidb_key_t last_key;
 
         if(verbose)
             printf("Internal node (page %i)\n", btn->page->npage);

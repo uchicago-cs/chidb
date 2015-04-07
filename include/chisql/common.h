@@ -8,19 +8,12 @@
 #include "vector.h"
 #include "list.h"
 
-/* Forward declarations */
-typedef struct RA_s RA_t;
-typedef struct Condition_t Condition_t;
-/* With these we can make the grand union of all SQL queries :) */
-struct SRA_s; /* select query */
-struct Table_s; /* create table query */
-struct Index_s; /* create index */
-typedef struct Insert_t Insert_t;
-typedef struct Delete_t Delete_t;
-
 enum query_type {
    SELECT_Q, CREATE_T_Q, CREATE_I_Q, INSERT_Q, DELETE_Q 
 };
+
+/* Forward declarations */
+typedef struct Condition_s Condition_t;
 
 typedef struct Query_s {
    enum query_type t;
@@ -28,8 +21,8 @@ typedef struct Query_s {
       struct SRA_s *sra;
       struct Table_s *table;
       struct Index_s *index; 
-      struct Insert_t *insert;
-      struct Delete_t *del;
+      struct Insert_s *insert;
+      struct Delete_s *del;
    };
 } Query_t;
 

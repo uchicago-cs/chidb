@@ -84,7 +84,7 @@ void test_new_node(BTree *bt, uint8_t type)
     chidb_Btree_freeMemNode(bt, btn);
 }
 
-void test_values(BTree *bt, key_t *keys, char **values, key_t nkeys)
+void test_values(BTree *bt, chidb_key_t *keys, char **values, chidb_key_t nkeys)
 {
     uint16_t size;
     uint8_t *data;
@@ -135,7 +135,7 @@ void test_bigfile(chidb *db)
     }
 }
 
-int chidb_Btree_findInIndex(BTree *bt, npage_t nroot, key_t ikey, key_t *pkey)
+int chidb_Btree_findInIndex(BTree *bt, npage_t nroot, chidb_key_t ikey, chidb_key_t *pkey)
 {
     BTreeNode *btn;
 
@@ -190,7 +190,7 @@ void test_index_bigfile(chidb *db, npage_t index_nroot)
         uint8_t* buf;
         uint16_t size;
         uint8_t data[192];
-        key_t pkey;
+        chidb_key_t pkey;
 
         rc = chidb_Btree_findInIndex(db->bt, index_nroot, bigfile_ikeys[i], &pkey);
         ck_assert(rc == CHIDB_OK);

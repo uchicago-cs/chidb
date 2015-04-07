@@ -52,10 +52,9 @@ data JoinCondition = On Condition
 
 */
 
+/* Forward declarations */
 typedef struct SRA_s SRA_t;
-typedef struct SRAList_s SRAList_t;
 typedef struct JoinCondition_s JoinCondition_t;
-typedef struct ProjectOption_s ProjectOption_t;
 
 enum SRAType {
    SRA_TABLE,
@@ -112,10 +111,10 @@ struct SRA_s {
    };
 };
 
-struct SRAList_s {
+typedef struct SRAList_s {
    SRA_t *sra;
    struct SRAList_s *next;
-};
+} SRAList_t;
 
 enum JoinConditionType {
    JOIN_COND_ON, JOIN_COND_USING
@@ -129,10 +128,10 @@ struct JoinCondition_s {
    };
 };
 
-struct ProjectOption_s {
+typedef struct ProjectOption_s {
    Expression_t *order_by, *group_by;
    enum OrderBy asc_desc; /* not used by group by */
-};
+} ProjectOption_t;
 
 SRA_t *SRATable(TableReference_t *ref);
 SRA_t *SRAProject(SRA_t *sra, Expression_t *expr_list);

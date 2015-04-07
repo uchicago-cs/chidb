@@ -2,9 +2,10 @@
 #define __INSERT_H_ 
 
 #include "common.h"
+#include "ra.h"
 #include "create.h"
 
-typedef struct Insert_t {
+typedef struct Insert_s {
    RA_t *ra;
    StrList_t *col_names;
    Literal_t *values;

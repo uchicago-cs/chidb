@@ -78,7 +78,5 @@ struct chidb
 {
     BTree   *bt;
 };
-typedef struct chidb chidb;
-
 
 #endif /*CHIDBINT_H_*/

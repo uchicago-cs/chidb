@@ -7,7 +7,7 @@ START_TEST (test_6_1)
     chidb *db;
     int rc;
     npage_t pages[] = {4,3,2};
-    key_t keys[] = {4,9,6000};
+    chidb_key_t keys[] = {4,9,6000};
     char *values[] = {"foo4","foo9","foo6000"};
 
 
@@ -35,7 +35,7 @@ START_TEST (test_6_2)
 {
     chidb *db;
     int rc;
-    key_t keys[] = {4,9,6000};
+    chidb_key_t keys[] = {4,9,6000};
     char *values[] = {"foo4","foo9","foo6000"};
 
 

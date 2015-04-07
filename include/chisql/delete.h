@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-typedef struct Delete_t {
+typedef struct Delete_s {
    char *table_name;
    Condition_t *where;
 } Delete_t;

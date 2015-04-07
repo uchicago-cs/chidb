@@ -179,7 +179,7 @@ typedef struct chidb_dbm_register
 } chidb_dbm_register_t;
 
 /* A 'statement' is really a compiled DBM program */
-typedef struct chidb_stmt
+struct chidb_stmt
 {
     /* Database associated with this statement */
     chidb *db;
@@ -206,7 +206,7 @@ typedef struct chidb_stmt
      * per operation */
     bool explain;
 
-} chidb_stmt;
+};
 
 #define EXISTS_REGISTER(stmt, r) ((r) >= 0 && (r) < (stmt)->nReg)
 #define IS_VALID_REGISTER(stmt, r) (EXISTS_REGISTER(stmt, r) && (stmt)->reg[r].type != REG_UNSPECIFIED)

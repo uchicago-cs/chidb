@@ -22,7 +22,7 @@ START_TEST (test_5_2)
     chidb *db;
     uint16_t size;
     uint8_t *data;
-    key_t nokeys[] = {0,4,6,8,9,11,18,27,36,40,100,650,1500,2500,3500,4500,5500};
+    chidb_key_t nokeys[] = {0,4,6,8,9,11,18,27,36,40,100,650,1500,2500,3500,4500,5500};
     int rc;
 
     db = malloc(sizeof(chidb));

@@ -44,7 +44,7 @@ enum CondType {
 };
 
 
-struct Condition_t {
+struct Condition_s {
    enum CondType t;
    union {
       CondComp comp;
