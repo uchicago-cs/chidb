@@ -1,10 +1,10 @@
 #include <chisql/chisql.h>
 
 
-Insert_t *Insert_make(RA_t *ra, StrList_t *opt_col_names, Literal_t *values)
+Insert_t *Insert_make(const char *table_name, StrList_t *opt_col_names, Literal_t *values)
 {
     Insert_t *new_insert = (Insert_t *)calloc(1, sizeof(Insert_t));
-    new_insert->ra = ra;
+    new_insert->table_name = strdup(table_name);
     new_insert->col_names = opt_col_names;
     new_insert->values = values;
     if (!values)
@@ -56,8 +56,7 @@ void Insert_print(Insert_t *insert)
         Literal_print(val);
         val = val->next;
     }
-    printf("] into ");
-    RA_print(insert->ra);
+    printf("] into %s", insert->table_name);
     if (insert->col_names)
     {
         StrList_t *list = insert->col_names;
@@ -89,7 +88,7 @@ void Insert_free(Insert_t *insert)
         fprintf(stderr, "Warning: Insert_free called on null pointer\n");
         return;
     }
-    RA_free(insert->ra);
+    free(insert->table_name);
     StrList_free(insert->col_names);
     Literal_free(insert->values);
     free(insert);

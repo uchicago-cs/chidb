@@ -86,22 +86,6 @@ static Table_t *Table_addPrimaryKey(Table_t *table, const char *col_name)
     return NULL;
 }
 
-Table_t *Table_addPrimaryKeys(Table_t *table, vector_t *col_names)
-{
-    unsigned i;
-    for (i=0; i < vector_size(col_names); ++i)
-    {
-        const char *col_name = (const char *)vector_getAt(col_names, i);
-        table = Table_addPrimaryKey(table, col_name);
-        if (!table)
-        {
-            fprintf(stderr, "Error: column '%s' not found\n", col_name);
-            return NULL;
-        }
-    }
-    return table;
-}
-
 void Table_free(void *table_vptr)
 {
     Table_t *table = (Table_t *)table_vptr;

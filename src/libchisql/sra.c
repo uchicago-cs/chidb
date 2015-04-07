@@ -422,6 +422,7 @@ static RA_t *desugar_table(SRA_t *sra)
     */
     if (!sra->table.ref->alias)
     {
+        /* TODO: See comment in RA_Table */
         return RA_Table(sra->table.ref->table_name);
     }
     else

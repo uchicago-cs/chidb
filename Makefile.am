@@ -54,7 +54,6 @@ libsimclist_la_SOURCES = src/simclist/simclist.c
 libchisql_la_SOURCES = \
                         src/libchisql/create.c \
                         src/libchisql/ra.c \
-                        src/libchisql/list.c \
                         src/libchisql/literal.c \
                         src/libchisql/common.c \
                         src/libchisql/insert.c \
@@ -63,8 +62,6 @@ libchisql_la_SOURCES = \
                         src/libchisql/column.c \
                         src/libchisql/delete.c \
                         src/libchisql/sra.c \
-                        src/libchisql/vector.c \
-                        src/libchisql/mock_db.c \
                         src/libchisql/sql-parser.c \
                         src/libchisql/sql-lexer.c
 libchisql_la_CFLAGS = $(AM_CFLAGS)

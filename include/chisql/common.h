@@ -5,8 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include "vector.h"
-#include "list.h"
+#include <stdbool.h>
 
 enum query_type {
    SELECT_Q, CREATE_T_Q, CREATE_I_Q, INSERT_Q, DELETE_Q 

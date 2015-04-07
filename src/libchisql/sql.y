@@ -133,7 +133,6 @@ create_table
 	: CREATE TABLE table_name '(' column_dec_list opt_key_dec_list ')' 
 		{
 			$$ = Table_make($3, $5, $6);
-			add_table($$);
 		}
 	;
 
@@ -446,7 +445,7 @@ opt_outer
 insert_into
 	: INSERT INTO table_name opt_column_names VALUES '(' values_list ')'
 		{
-			$$ = Insert_make(RA_Table($3), $4, $7);
+			$$ = Insert_make($3, $4, $7);
 		}
 	;
 
@@ -516,15 +515,11 @@ int chisql_stmt_print(chisql_statement_t *stmt)
 }
 
 
-List_t *tables = NULL;
-
 int chisql_parser(const char *sql, chisql_statement_t **stmt)
 {
 	int rc;
 
 	__stmt = malloc(sizeof(chisql_statement_t));
-	mock_db_init();
-	printf("The SQL statement to parse is: %s", sql);
 
 	YY_BUFFER_STATE my_string_buffer = yy_scan_string (sql);
 	rc = yyparse();
