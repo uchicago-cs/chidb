@@ -19,7 +19,7 @@
 USE products-empty.cdb
 
 %%
-# Open the schema table using cursor 0
+# Open the "products" table using cursor 0
 Integer      2  0  _  _  
 OpenWrite    0  0  3  _
 

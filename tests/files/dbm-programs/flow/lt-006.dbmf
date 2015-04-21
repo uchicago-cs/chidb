@@ -1,0 +1,31 @@
+# Test LT-006
+#
+# Test "Lt" with two strings in R_1 and R_2
+# where R_1 > R_2
+#
+# The program stores the value 42 in R_3 and, if
+# if the comparison is true, the program will leave
+# it intact (if not, it will overwrite R_3 with 0)
+
+
+NO DBFILE
+
+%%
+
+String   3 1 _ "zzz"
+String   3 2 _ "aaa"
+Integer 42 3 _ _
+Lt       1 5 2 _
+Integer  0 3 _ _
+Halt     0 _ _ _
+
+%%
+
+# No query results
+
+%%
+
+R_1 string  "zzz"
+R_2 string  "aaa"
+R_3 integer 42
+    

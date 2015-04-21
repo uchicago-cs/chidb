@@ -62,7 +62,7 @@ START_TEST (test_1a_4)
 
     db = malloc(sizeof(chidb));
 
-    char *fname = create_copy(TESTFILE_CORRUPT3, "btree-test-1a-3.dat");
+    char *fname = create_copy(TESTFILE_CORRUPT3, "btree-test-1a-4.dat");
     rc = chidb_Btree_open(fname, db, &db->bt);
     ck_assert(rc == CHIDB_ECORRUPTHEADER);
     delete_copy(fname);

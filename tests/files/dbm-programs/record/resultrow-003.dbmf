@@ -1,0 +1,32 @@
+# Test RESULTROW-003
+#
+# Produces multiple rows with a single column
+#
+
+NO DBFILE
+
+%%
+
+Integer     42 1 _ _
+ResultRow    1 1 _ _
+Integer     57 1 _ _
+ResultRow    1 1 _ _
+Integer     23 1 _ _
+ResultRow    1 1 _ _
+Integer     17 1 _ _
+ResultRow    1 1 _ _
+Integer      5 1 _ _
+ResultRow    1 1 _ _
+
+
+%%
+
+42
+57
+23
+17
+5
+
+%%
+
+R_1 integer 5

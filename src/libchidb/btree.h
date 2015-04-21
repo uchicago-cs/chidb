@@ -171,13 +171,4 @@ int chidb_Btree_insertNonFull(BTree *bt, npage_t npage, BTreeCell *btc);
 int chidb_Btree_split(BTree *bt, npage_t npage_parent, npage_t npage_child, ncell_t parent_cell, npage_t *npage_child2);
 
 
-// Auxiliary functions
-int chidb_Btree_insertCellOffset(BTreeNode *btn, ncell_t ncell, uint16_t celloffset);
-void chidb_Btree_setcelloffset(BTreeNode *btn, ncell_t ncell, uint16_t v);
-uint16_t chidb_Btree_getcelloffset(BTreeNode *btn, ncell_t ncell);
-uint16_t chidb_Btree_getcellsize(BTreeCell *cell);
-int chidb_Btree_defragment(BTreeNode *btn, uint16_t page_size);
-int chidb_Btree_copyPage(BTree *bt, npage_t from, npage_t *to);
-uint16_t chidb_Btree_getrawcellsize(uint8_t type, uint8_t *cell_raw);
-
 #endif /*BTREE_H_*/

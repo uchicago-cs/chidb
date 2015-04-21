@@ -43,14 +43,15 @@
 
 #include <stdlib.h>
 #include <chidb/chidb.h>
+#include "dbm.h"
 #include "btree.h"
 
-/* This file currently provides only a very basic implementation
- * of chidb_open and chidb_close that are sufficient to test
- * the B Tree module. The rest of the functions are left
- * as an exercise to the student. chidb_open itself may need to be
- * modified if other chidb modules are implemented.
- */
+/* Implemented in codegen.c */
+int chidb_stmt_codegen(chidb_stmt *stmt, chisql_statement_t *sql_stmt);
+
+/* Implemented in optimizer.c */
+int chidb_stmt_optimize(chidb_stmt *stmt, chisql_statement_t *sql_stmt, chisql_statement_t **sql_stmt_opt);
+
 
 int chidb_open(const char *file, chidb **db)
 {
@@ -59,6 +60,8 @@ int chidb_open(const char *file, chidb **db)
         return CHIDB_ENOMEM;
     chidb_Btree_open(file, *db, &(*db)->bt);
 
+    /* Additional initialization code goes here */
+
     return CHIDB_OK;
 }
 
@@ -66,61 +69,145 @@ int chidb_close(chidb *db)
 {
     chidb_Btree_close(db->bt);
     free(db);
+
+    /* Additional cleanup code goes here */
+
     return CHIDB_OK;
 }
 
 int chidb_prepare(chidb *db, const char *sql, chidb_stmt **stmt)
 {
-    /* Your code goes here */
+    int rc;
+    chisql_statement_t *sql_stmt, *sql_stmt_opt;
 
-    return CHIDB_OK;
+    *stmt = malloc(sizeof(chidb_stmt));
+
+    rc = chidb_stmt_init(*stmt, db);
+
+    if(rc != CHIDB_OK)
+    {
+        free(*stmt);
+        return rc;
+    }
+
+    rc = chisql_parser(sql, &sql_stmt);
+
+    if(rc != CHIDB_OK)
+    {
+        free(*stmt);
+        return rc;
+    }
+
+    rc = chidb_stmt_optimize(*stmt, sql_stmt, &sql_stmt_opt);
+
+    if(rc != CHIDB_OK)
+    {
+        free(*stmt);
+        return rc;
+    }
+
+    rc = chidb_stmt_codegen(*stmt, sql_stmt_opt);
+
+    free(sql_stmt_opt);
+
+    return rc;
 }
 
 int chidb_step(chidb_stmt *stmt)
 {
-    /* Your code goes here */
-
-    return CHIDB_OK;
+    return chidb_stmt_exec(stmt);
 }
 
 int chidb_finalize(chidb_stmt *stmt)
 {
-    /* Your code goes here */
-
-    return CHIDB_OK;
+    return chidb_stmt_free(stmt);
 }
 
 int chidb_column_count(chidb_stmt *stmt)
 {
-    /* Your code goes here */
-
-    return 0;
+    return stmt->nCols;
 }
 
 int chidb_column_type(chidb_stmt *stmt, int col)
 {
-    /* Your code goes here */
+    if(col < 0 || col >= stmt->nCols)
+        return SQL_NOTVALID;
+    else
+    {
+        chidb_dbm_register_t *r = &stmt->reg[stmt->startRR + col];
 
-    return SQL_NOTVALID;
+        switch(r->type)
+        {
+        case REG_UNSPECIFIED:
+        case REG_BINARY:
+            return SQL_NOTVALID;
+            break;
+        case REG_NULL:
+            return SQL_NULL;
+            break;
+        case REG_INT32:
+            return SQL_INTEGER_4BYTE;
+            break;
+        case REG_STRING:
+            return 2 * strlen(r->value.s) + SQL_TEXT;
+            break;
+        default:
+            return SQL_NOTVALID;
+        }
+    }
 }
 
 const char *chidb_column_name(chidb_stmt* stmt, int col)
 {
-    /* Your code goes here */
-
-    return "";
+    if(col < 0 || col >= stmt->nCols)
+        return NULL;
+    else
+        return stmt->cols[col];
 }
 
 int chidb_column_int(chidb_stmt *stmt, int col)
 {
-    /* Your code goes here */
+    if(col < 0 || col >= stmt->nCols)
+    {
+        /* Undefined behaviour */
+        return 0;
+    }
+    else
+    {
+        chidb_dbm_register_t *r = &stmt->reg[stmt->startRR + col];
 
-    return 0;
+        if(r->type != REG_INT32)
+        {
+            /* Undefined behaviour */
+            return 0;
+        }
+        else
+        {
+            return r->value.i;
+        }
+    }
 }
 
 const char *chidb_column_text(chidb_stmt *stmt, int col)
 {
-    /* Your code goes here */
+    if(col < 0 || col >= stmt->nCols)
+    {
+        /* Undefined behaviour */
+        return NULL;
+    }
+    else
+    {
+        chidb_dbm_register_t *r = &stmt->reg[stmt->startRR + col];
 
-    return "";
+        if(r->type != REG_STRING)
+        {
+            /* Undefined behaviour */
+            return NULL;
+        }
+        else
+        {
+            return r->value.s;
+        }
+    }
+
 }

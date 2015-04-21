@@ -5,6 +5,9 @@ void chidb_shell_init_ctx(chidb_shell_ctx_t *ctx)
 {
     ctx->db = NULL;
     ctx->dbfile = NULL;
+
+    ctx->header = false;
+    ctx->mode = MODE_LIST;
 }
 
 int chidb_shell_open_db(chidb_shell_ctx_t *ctx, char *file)

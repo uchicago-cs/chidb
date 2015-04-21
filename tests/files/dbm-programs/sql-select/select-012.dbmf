@@ -1,0 +1,109 @@
+# Test SELECT-12
+#
+# Assuming this table:
+#
+#   CREATE TABLE numbers(code INTEGER PRIMARY KEY, textcode TEXT, altcode INTEGER);
+#
+# Run the equivalent of this SQL query:
+#
+#   select code from numbers where code > 3055 and code < 3200;
+#
+# Given the contents of the file, this touches on a number of use cases:
+#
+# - Seeking a key that doesn't exist (3055)
+# - The next largest key (3056) occurs in the middle of a leaf node.
+# - Getting to the key doesn't involve using the Right-Page pointer
+#   (tests 4-11 use only the Right-Page pointer to get to the key)
+# - Iterating through the range of keys involves two types of backtracking:
+#   from the leaf node up to the parent node, and from the leaf node all
+#   the way to the node.
+#
+# The relevant parts of the tree are the following: (numbers represent page numbers)
+#
+#                                    2
+#                                    |
+#            ----------------------------- ...
+#           /                 |
+#          103               157
+#           |                 |
+#     ------------      --------------
+#    / | | ... |  \     / |  ---  |   \
+#    4 5 6     52 53   54 55     105 106
+#
+# The record with the first key greater than 3055 has key 3056 and is located in page 52.
+# The record with the last key less than 3200 has key 3194 and is located in page 55.
+#
+# Registers:
+# 0: Contains the "numbers" table root page (2)
+# 
+
+# This file has a B-Tree with height 3
+#
+# Note: This file also has an index on column "altcode",
+#       but we are not using it.
+USE 1table-largebtree.cdb
+
+%%
+
+# Open the courses table using cursor 0
+Integer      2  0  _  _  
+OpenRead     0  0  4  _
+
+# Store integers
+Integer      3055 1  _  _
+Integer      3200 2  _  _
+
+# Move the cursor to the first entry with key > 3055
+# Produce result rows and move the cursor forward while
+# the key is < 3200
+SeekGt       0  9  1  _ 
+Key          0  3  _  _
+Ge           2  9  3  _
+ResultRow    3  1  _  _
+Next         0  5  _  _
+
+# Close the cursor
+Close        0  _  _  _
+Halt         _  _  _  _
+%%
+
+3056      
+3057      
+3065      
+3077      
+3078      
+3085      
+3086      
+3092      
+3094      
+3108      
+3114      
+3116      
+3117      
+3124      
+3127      
+3128      
+3129      
+3145      
+3148      
+3153      
+3156      
+3160      
+3163      
+3164      
+3168      
+3169      
+3173      
+3175      
+3177      
+3179      
+3186      
+3187      
+3194
+
+%%
+
+R_0 integer 2
+R_1 integer 3055
+R_2 integer 3200
+R_3 integer 3201

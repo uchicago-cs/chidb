@@ -58,9 +58,13 @@
 #define CHIDB_ECORRUPTHEADER (6)
 #define CHIDB_ENOTFOUND (9)
 #define CHIDB_EDUPLICATE (8)
+#define CHIDB_EEMPTY (9)
+#define CHIDB_EPARSE (10)
 
 
 #define DEFAULT_PAGE_SIZE (1024)
+
+#define MAX_STR_LEN (256)
 
 typedef uint16_t ncell_t;
 typedef uint32_t npage_t;

@@ -46,8 +46,8 @@ Close        0  _  _  _
 R_0 integer 1
 R_1 integer
 R_2 string "table"
-R_3 string "test"
-R_4 string "test"
+R_3 string "products"
+R_4 string "products"
 R_5 integer
 R_6 string "CREATE TABLE products(code INTEGER PRIMARY KEY, name TEXT, price INTEGER)"   
 R_7 binary

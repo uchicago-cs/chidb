@@ -113,6 +113,7 @@ int main(int argc, char *argv[])
         {
             int count;
             const char *cmd;
+            char *cmd2;
 
             cmd = el_gets(el, &count);
 
@@ -127,9 +128,16 @@ int main(int argc, char *argv[])
             }
             else
             {
-                history(hist, &ev, H_ENTER, cmd); // Add to history
+                cmd2 = strdup(cmd);
 
-                chidb_shell_handle_cmd(&shell_ctx, cmd);
+                /* TODO: Do better whitespace stripping */
+                if(cmd2[strlen(cmd2)-1] == '\n')
+                    cmd2[strlen(cmd2)-1] = '\0';
+
+                history(hist, &ev, H_ENTER, cmd2); // Add to history
+
+                chidb_shell_handle_cmd(&shell_ctx, cmd2);
+                free(cmd2);
             }
 
         }

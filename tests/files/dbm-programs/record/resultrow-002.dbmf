@@ -1,0 +1,25 @@
+# Test RESULTROW-002
+#
+# Produces a single row with multiple columns
+#
+
+NO DBFILE
+
+%%
+
+Integer     1 1 _ _
+String      3 2 _ "foo"
+Null        _ 3 _ _
+Integer    42 4 _ _
+ResultRow   1 4 _ _
+
+%%
+
+1 "foo" NULL 42
+
+%%
+
+R_1 integer 1
+R_2 string "foo"
+R_3 null
+R_4 integer 42

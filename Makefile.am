@@ -91,6 +91,8 @@ libchidb_la_SOURCES = \
                         src/libchidb/dbm-file.c \
                         src/libchidb/dbm-ops.c \
                         src/libchidb/dbm-cursor.c \
+                        src/libchidb/codegen.c \
+                        src/libchidb/optimizer.c \
                         src/libchidb/log.c 
 libchidb_la_CFLAGS = $(AM_CFLAGS)
 libchidb_la_LIBADD = libsimclist.la libchisql.la
@@ -112,7 +114,7 @@ chidb_DEPENDENCIES = libsimclist.la libchidb.la libchisql.la
 #
 # tests
 #
-CHIDB_BUILT_TESTS = tests/check_btree tests/check_dbrecord \
+CHIDB_BUILT_TESTS = tests/check_btree tests/check_dbrecord tests/check_dbm \
                     tests/check_pager tests/check_utils
 TESTS = $(CHIDB_BUILT_TESTS) 
 check_PROGRAMS = $(CHIDB_BUILT_TESTS)
@@ -128,7 +130,7 @@ tests_check_btree_SOURCES = tests/check_btree.c \
                                tests/check_btree_5.c \
                                tests/check_btree_6.c \
                                tests/check_btree_7.c \
-                               tests/check_btree_8.c \                             
+                               tests/check_btree_8.c \
                                tests/check_common.c
 tests_check_btree_CFLAGS = $(AM_CFLAGS) $(CHECK_CFLAGS) -I${srcdir}/src/ -DTEST_DIR="\"$(srcdir)/tests/\""
 tests_check_btree_LDADD = libchidb.la $(CHECK_LIBS) 
@@ -137,11 +139,10 @@ tests_check_dbrecord_SOURCES = tests/check_dbrecord.c
 tests_check_dbrecord_CFLAGS = $(AM_CFLAGS) $(CHECK_CFLAGS) -I${srcdir}/src/
 tests_check_dbrecord_LDADD = libchidb.la $(CHECK_LIBS) 
 
-#tests_check_vdbe_SOURCES = tests/check_vdbe.c  \
-#                           tests/vdbe_tester.c \
-#                           tests/check_common.c
-#tests_check_vdbe_CFLAGS = $(AM_CFLAGS) $(CHECK_CFLAGS) -I${srcdir}/src/ -DTEST_DIR="\"$(srcdir)/tests/\""
-#tests_check_vdbe_LDADD = libchidb.la $(CHECK_LIBS) 
+tests_check_dbm_SOURCES = tests/check_dbm.c  \
+                           tests/check_common.c
+tests_check_dbm_CFLAGS = $(AM_CFLAGS) $(CHECK_CFLAGS) -I${srcdir}/src/ -DTEST_DIR="\"$(srcdir)/tests/\""
+tests_check_dbm_LDADD = libchidb.la $(CHECK_LIBS) 
 
 tests_check_pager_SOURCES = tests/check_pager.c \
                             tests/check_common.c

@@ -1,0 +1,25 @@
+# Test HALT-001
+#
+# Test whether Halt really stops the program
+#
+# The program stores the value 42 in R_1 and, if
+# if the program does halt, that value remains
+# unchanged
+
+
+NO DBFILE
+
+%%
+
+Integer 42 1 _ _
+Halt     0 _ _ _
+Integer  0 1 _ _
+
+%%
+
+# No query results
+
+%%
+
+R_1 integer 42
+    

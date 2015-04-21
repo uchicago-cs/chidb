@@ -41,21 +41,36 @@
 #define DBM_FILE_H_
 
 #include <stdbool.h>
-//#include "simclist.h"
+#include "simclist.h"
 #include "chidbInt.h"
+#include "dbm-types.h"
+#include <chidb/dbm-file.h>
+
+#define MAX_FILENAME_SIZE (256)
 
 
 typedef struct chidb_dbm_file
 {
+    char* filename;
+
     chidb *db;
     chidb_stmt stmt;
 
-//	list_t queryResults;
-//	list_t registers;
+	list_t queryResults;
+	list_t registers;
 
-    char *dbfile;
+    char dbfile[MAX_FILENAME_SIZE];
     bool delete_dbfile;
+    bool copyOnUse;
 } chidb_dbm_file_t;
+
+typedef struct chidb_dbm_file_register
+{
+    uint32_t nReg;
+    chidb_dbm_register_t reg;
+    bool has_value;
+} chidb_dbm_file_register_t;
+
 
 
 #endif /* DBM_FILE_H_ */

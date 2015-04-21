@@ -1,0 +1,50 @@
+# Test SELECT-7
+#
+# Same as SELECT-6 but with this query:
+#
+#   select altcode from numbers where code > 9985;
+#
+# i.e. "greater than" instead of "greater than or equal"
+# 
+
+# This file has a B-Tree with height 3
+#
+# Note: This file also has an index on column "altcode",
+#       but we are not using it.
+USE 1table-largebtree.cdb
+
+%%
+
+# Open the courses table using cursor 0
+Integer      2  0  _  _  
+OpenRead     0  0  4  _
+
+# Store 9985 in register 1
+Integer      9985  1  _  _
+
+# Move the cursor to the first entry with key > 9985
+# (this table does have an entry with key=9985)
+# and create a result row with just column "altcode"
+# Then, keep moving the cursor forward and producing
+# result rows.
+SeekGt       0  7  1  _ 
+Column       0  2  2  _
+ResultRow    2  1  _  _
+Next         0  4  _  _
+
+# Close the cursor
+Close        0  _  _  _
+Halt         _  _  _  _
+
+%%
+      
+8648      
+1024      
+2377      
+4399      
+
+%%
+
+R_0 integer 2
+R_1 integer 9985
+R_2 integer 4399

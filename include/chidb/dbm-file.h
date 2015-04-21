@@ -14,7 +14,9 @@
 typedef struct chidb_dbm_file chidb_dbm_file_t;
 
 int chidb_dbm_file_load(const char* filename, chidb_dbm_file_t **dbmf, chidb *db);
+int chidb_dbm_file_load2(const char* filename, chidb_dbm_file_t **dbmf, const char* dbfiledir, const char* genfiledir, bool copyOnUse);
 int chidb_dbm_file_run(chidb_dbm_file_t *dbmf);
+int chidb_dbm_file_print_rr(chidb_dbm_file_t *dbmf);
 int chidb_dbm_file_print_program(chidb_dbm_file_t *dbmf);
 int chidb_dbm_file_close(chidb_dbm_file_t *dbmf);
 

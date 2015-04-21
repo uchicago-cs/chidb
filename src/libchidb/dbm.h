@@ -45,11 +45,11 @@
 
 
 int chidb_stmt_init(chidb_stmt *stmt, chidb *db);
+int chidb_stmt_free(chidb_stmt *stmt);
 int chidb_stmt_set_op(chidb_stmt *stmt, chidb_dbm_op_t *op, uint32_t pos);
 int chidb_stmt_exec(chidb_stmt *stmt);
+char* chidb_stmt_rr_str(chidb_stmt *stmt, char sep);
+int chidb_stmt_rr_print(chidb_stmt *stmt, char sep);
 int chidb_stmt_print(chidb_stmt *stmt);
-
-
-
 
 #endif /* DBM_H_ */

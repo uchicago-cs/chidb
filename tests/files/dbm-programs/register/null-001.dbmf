@@ -1,0 +1,18 @@
+# Test NULL-001
+#
+# Store a null in a register
+
+NO DBFILE
+
+%%
+
+Null _ 5 _ _
+
+%%
+
+# No query results
+
+%%
+
+R_5 null
+    

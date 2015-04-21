@@ -295,7 +295,7 @@ int chidb_Btree_insertCell(BTreeNode *btn, ncell_t ncell, BTreeCell *cell)
  * - nroot: Page number of the root node of the B-Tree we want search in
  * - key: Entry key
  * - data: Out-parameter where a copy of the data must be stored
- * - size: Number of bytes of data
+ * - size: Out-parameter where the number of bytes of data must be stored
  *
  * Return
  * - CHIDB_OK: Operation successful
@@ -444,7 +444,6 @@ int chidb_Btree_insertNonFull(BTree *bt, npage_t npage, BTreeCell *btc)
  * - parent_ncell: Position in the parent where the new cell will
  *                 be inserted.
  * - npage_child2: Out parameter. Used to return the page of the new child node.
- * - btc: BTreeCell to insert into B-Tree
  *
  * Return
  * - CHIDB_OK: Operation successful

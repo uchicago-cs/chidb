@@ -42,29 +42,30 @@
 #include "btree.h"
 #include "record.h"
 
+/* Function pointer for dispatch table */
 typedef int (*handler_function)(chidb_stmt *stmt, chidb_dbm_op_t *op);
 
+/* Single entry in the instruction dispatch table */
 struct handler_entry
 {
     opcode_t opcode;
     handler_function func;
 };
 
-
-/* This generates all the handler prototypes. It expands to:
+/* This generates all the instruction handler prototypes. It expands to:
  *
  * int chidb_dbm_op_OpenRead(chidb_stmt *stmt, chidb_dbm_op_t *op);
  * int chidb_dbm_op_OpenWrite(chidb_stmt *stmt, chidb_dbm_op_t *op);
  * ...
  * int chidb_dbm_op_Halt(chidb_stmt *stmt, chidb_dbm_op_t *op);
  */
-
 #define HANDLER_PROTOTYPE(OP) int chidb_dbm_op_## OP (chidb_stmt *stmt, chidb_dbm_op_t *op);
 FOREACH_OP(HANDLER_PROTOTYPE)
 
 
-/* This the dispatch table */
+/* Ladies and gentlemen, the dispatch table. */
 #define HANDLER_ENTRY(OP) { Op_ ## OP, chidb_dbm_op_## OP},
+
 struct handler_entry dbm_handlers[] =
 {
     FOREACH_OP(HANDLER_ENTRY)
@@ -76,11 +77,11 @@ int chidb_dbm_op_handle (chidb_stmt *stmt, chidb_dbm_op_t *op)
 }
 
 
+/*** INSTRUCTION HANDLER IMPLEMENTATIONS ***/
+
 
 int chidb_dbm_op_Noop (chidb_stmt *stmt, chidb_dbm_op_t *op)
 {
-    /* Your code goes here */
-
     return CHIDB_OK;
 }
 
@@ -204,8 +205,6 @@ int chidb_dbm_op_ResultRow (chidb_stmt *stmt, chidb_dbm_op_t *op)
     /* Your code goes here */
 
     return CHIDB_OK;
-
-    return 0;
 }
 
 

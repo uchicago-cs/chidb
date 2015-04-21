@@ -129,6 +129,8 @@ static const char* op_str[] =
     FOREACH_OP(GENERATE_ENUM_STR)
 };
 
+/* Functions to map opcodes to strings, and viceverse */
+
 static inline const char* opcode_to_str(int opcode)
 {
     return (opcode >=0 && opcode <= Op_Halt)? op_str[opcode] : NULL;
@@ -143,6 +145,7 @@ static inline int str_to_opcode(const char *s)
     return -1;
 }
 
+/* A single DBM instruction */
 typedef struct chidb_dbm_op
 {
     opcode_t opcode;
@@ -152,6 +155,10 @@ typedef struct chidb_dbm_op
     char *p4;
 } chidb_dbm_op_t;
 
+
+/* A register can be of type integer, string, null or binary.
+ * Additionally we define a REG_UNSPECIFIED type, which is
+ * the type of any new register than hasn't been assigned a value. */
 typedef enum register_type
 {
     REG_UNSPECIFIED    = 0,
@@ -161,6 +168,26 @@ typedef enum register_type
     REG_BINARY         = 4
 } register_type_t;
 
+static inline const char* regtype_to_str(register_type_t regtype)
+{
+    switch(regtype)
+    {
+    case REG_UNSPECIFIED:
+        return "unspecified";
+    case REG_NULL:
+        return "null";
+    case REG_INT32:
+        return "integer";
+    case REG_STRING:
+        return "string";
+    case REG_BINARY:
+        return "binary";
+    default:
+        return "unknown";
+    }
+}
+
+/* A type representing a single register */
 typedef struct chidb_dbm_register
 {
     register_type_t type;
@@ -178,7 +205,18 @@ typedef struct chidb_dbm_register
 
 } chidb_dbm_register_t;
 
-/* A 'statement' is really a compiled DBM program */
+/*  This is the struct that represents a single DBM program.
+ *
+ *  Notice how a single DBM program has its own registers and cursors;
+ *  unlike the type of programs you may be accustomed to, the DBM programs
+ *  don't share registers and other resources. Each program is, in essence,
+ *  a self-contained machine.
+ *
+ *  The reason why this type is called stmt (short for “statement”) is
+ *  because a SQL statement is compiled into a DBM. So, in essence,
+ *  a compiled SQL statement *is* a DBM.
+ *
+ */
 struct chidb_stmt
 {
     /* Database associated with this statement */
@@ -187,31 +225,50 @@ struct chidb_stmt
     /* SQL statement from which this DBM program was created */
     chisql_statement_t *sql;
 
-    /* Program counter and operations */
+    /* Program counter and instructions */
+    /* Instructions are stored in a dynamically allocated array of chidb_dbm_op_t's */
     uint32_t pc;
     chidb_dbm_op_t *ops;
-    uint32_t nOps;
-    uint32_t endOp;
+    uint32_t nOps;  /* Size of the array */
+    uint32_t endOp; /* Last actual operation (endOp < nOps) */
 
     /* Registers */
+    /* Registers are stored in a dynamically allocated array of chidb_dbm_register_t's */
     chidb_dbm_register_t *reg;
     uint32_t nReg;
 
     /* Cursors */
+    /* Cursors are stored in a dynamically allocated array of chidb_dbm_cursor_t's */
     chidb_dbm_cursor_t *cursors;
     uint32_t nCursors;
+
+    /* Result Row: First register and number of registers */
+    uint32_t startRR;
+    uint32_t nRR;
+
+    /* Result row: column names */
+    /* nCols is determined by the SQL statement. nRR should always
+     * match this number of columns. */
+    char **cols;
+    uint32_t nCols;
 
     /* Is this an "EXPLAIN" statement? If so, "running" this
      * statement will yield the program itself, with one row
      * per operation */
     bool explain;
 
+    /* Additional fields go here */
 };
+
+/* Handy macros for checking whether we're accessing a correct register, cursor, or DBM address */
 
 #define EXISTS_REGISTER(stmt, r) ((r) >= 0 && (r) < (stmt)->nReg)
 #define IS_VALID_REGISTER(stmt, r) (EXISTS_REGISTER(stmt, r) && (stmt)->reg[r].type != REG_UNSPECIFIED)
 
 #define EXISTS_CURSOR(stmt, c) ((c) >= 0 && (c) < (stmt)->nCursors)
 #define IS_VALID_CURSOR(stmt, c) (EXISTS_CURSOR(stmt, c) && (stmt)->cursors[c].type != CURSOR_UNSPECIFIED)
+
+#define IS_VALID_ADDRESS(stmt, a) ((a) >= 0 && (a) < (stmt)->endOp)
+
 
 #endif /* DBM_TYPES_H_ */

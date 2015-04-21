@@ -1,0 +1,52 @@
+# Test SELECT-1
+#
+# Assuming this table:
+#
+#   CREATE TABLE courses(code INTEGER PRIMARY KEY, name TEXT, prof BYTE, dept INTEGER);
+#
+# Run the equivalent of this SQL query:
+#
+#   SELECT * FROM courses;
+#
+# Registers:
+# 0: Contains the "courses" table root page (2)
+# 1-4: Contains the result row values
+
+# This file has a 1-page table, which allows us
+# to test cursors without navigating the tree
+# structure.
+USE 1table-1page.cdb
+
+%%
+
+# Open the courses table using cursor 0
+Integer      2  0  _  _  
+OpenRead     0  0  4  _
+
+# Go to the first entry. If the database is empty,
+# jump to the end of the program
+Rewind       0  9  _  _
+
+# Fetch the key of the row, plus the values
+# of "name", "prof", and "dept"
+Key          0  1  _  _
+Column       0  1  2  _ 
+Column       0  2  3  _ 
+Column       0  3  4  _ 
+ResultRow    1  4  _  _
+Next         0  3  _  _
+
+# Close the cursor
+Close        0  _  _  _
+Halt         _  _  _  _
+
+%%
+
+21000  "Programming Languages"   75    89
+23500  "Databases"               NULL  42
+27500  "Operating Systems"       NULL  89
+
+%%
+
+R_0 integer 2
+R_1 integer

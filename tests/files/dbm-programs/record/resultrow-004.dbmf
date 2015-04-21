@@ -1,0 +1,37 @@
+# Test RESULTROW-004
+#
+# Produces multiple rows with multiple columns
+#
+
+NO DBFILE
+
+%%
+
+Integer     1 1 _ _
+String      3 2 _ "foo"
+Null        _ 3 _ _
+Integer    42 4 _ _
+ResultRow   1 4 _ _
+Integer     2 1 _ _
+String      3 2 _ "bar"
+Null        _ 3 _ _
+Integer    57 4 _ _
+ResultRow   1 4 _ _
+Integer     3 1 _ _
+String      3 2 _ "baz"
+Null        _ 3 _ _
+Integer    23 4 _ _
+ResultRow   1 4 _ _
+
+%%
+
+1 "foo" NULL 42
+2 "bar" NULL 57
+3 "baz" NULL 23
+
+%%
+
+R_1 integer 3
+R_2 string "baz"
+R_3 null
+R_4 integer 23

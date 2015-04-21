@@ -4,17 +4,31 @@
 #include "shell.h"
 #include "commands.h"
 #include <chisql/chisql.h>
+#include <chidb/utils.h>
+
 
 #define COL_SEPARATOR "|"
 
 struct handler_entry handlers[] =
 {
-    HANDLER_ENTRY (parse),
-    HANDLER_ENTRY (dbmrun),
+    HANDLER_ENTRY (open,      ".open FILENAME     Close existing database (if any) and open FILENAME"),
+    HANDLER_ENTRY (parse,     ".parse \"SQL\"       Show parse tree for statement SQL"),
+    HANDLER_ENTRY (dbmrun,    ".dbmrun DBMFILE    Run DBM program in DBMFILE"),
+    HANDLER_ENTRY (headers,   ".headers on|off    Switch display of headers on or off in query results"),
+    HANDLER_ENTRY (mode,      ".mode MODE         Switch display mode. MODE is one of:\n"
+    		                  "                     column  Left-aligned columns\n"
+    		                  "                     list    Values delimited by | (default)"),
+    HANDLER_ENTRY (help,      ".help              Show this message"),
 
     NULL_ENTRY
 };
 
+
+void usage_error(struct handler_entry *e, const char *msg)
+{
+    fprintf(stderr, "ERROR: %s\n", msg);
+    fprintf(stderr, "%s\n", e->help);
+}
 
 int chidb_shell_handle_cmd(chidb_shell_ctx_t *ctx, const char *cmd)
 {
@@ -22,24 +36,31 @@ int chidb_shell_handle_cmd(chidb_shell_ctx_t *ctx, const char *cmd)
 
     if(cmd[0] == '.')
     {
-        int h;
+        int h, ntokens;
+        char *cmddup = strdup(cmd), **tokens;
+
+        ntokens = chidb_tokenize(cmddup, &tokens);
 
         for(h=0; handlers[h].name != NULL; h++)
         {
-            if (!strncmp(cmd+1, handlers[h].name, handlers[h].name_len))
+            if (!strncmp(tokens[0]+1, handlers[h].name, handlers[h].name_len))
             {
-                rc = handlers[h].func(ctx, cmd + handlers[h].name_len + 2);
+                rc = handlers[h].func(ctx, &handlers[h], (const char**) tokens, ntokens);
                 break;
             }
         }
 
         if (handlers[h].name == NULL)
         {
-            fprintf(stderr, "ERROR: Unrecognized command: %s\n", cmd);
+            fprintf(stderr, "ERROR: Unrecognized command: %s\n", tokens[0]);
+            free(tokens);
+            free(cmddup);
             return 1;
         }
         else
         {
+            free(tokens);
+            free(cmddup);
             return rc;
         }
     }
@@ -72,30 +93,87 @@ int chidb_shell_handle_sql(chidb_shell_ctx_t *ctx, const char *sql)
     if (rc == CHIDB_OK)
     {
         int numcol = chidb_column_count(stmt);
-        for(int i = 0; i < numcol; i ++)
+
+        if(ctx->header)
         {
-            printf(i==0?"":COL_SEPARATOR);
-            printf("%s", chidb_column_name(stmt,i));
+            for(int i = 0; i < numcol; i ++)
+            {
+                if(ctx->mode == MODE_LIST)
+                {
+                    printf(i==0?"":COL_SEPARATOR);
+                    printf("%s", chidb_column_name(stmt,i));
+                }
+                else if(ctx->mode == MODE_COLUMN)
+                {
+                    printf(i==0?"":" ");
+                    printf("%-10.10s", chidb_column_name(stmt,i));
+                }
+            }
+            printf("\n");
+
+            if(ctx->mode == MODE_COLUMN)
+            {
+                for(int i = 0; i < numcol; i ++)
+                {
+                   printf(i==0?"":" ");
+                   printf("----------");
+                }
+                printf("\n");
+            }
         }
-        printf("\n");
 
         while((rc = chidb_step(stmt)) == CHIDB_ROW)
         {
             for(int i = 0; i < numcol; i++)
             {
-                printf(i==0?"":COL_SEPARATOR);
-                switch(chidb_column_type(stmt,i))
+                int coltype;
+
+                if(ctx->mode == MODE_LIST)
+                    printf(i==0?"":COL_SEPARATOR);
+                else if (ctx->mode == MODE_COLUMN)
+                    printf(i==0?"":" ");
+
+
+                coltype = chidb_column_type(stmt,i);
+
+                if(coltype == SQL_NOTVALID)
                 {
-                case SQL_NULL:
+                    printf("ERROR: Column %i return an invalid type.\n", coltype);
                     break;
-                case SQL_INTEGER_1BYTE:
-                case SQL_INTEGER_2BYTE:
-                case SQL_INTEGER_4BYTE:
-                    printf("%i", chidb_column_int(stmt,i));
-                    break;
-                case SQL_TEXT:
-                    printf("%s", chidb_column_text(stmt,i));
-                    break;
+                }
+                else if(coltype == SQL_INTEGER_1BYTE || coltype == SQL_INTEGER_2BYTE || coltype == SQL_INTEGER_4BYTE)
+                {
+                    if(ctx->mode == MODE_LIST)
+                        printf("%i", chidb_column_int(stmt,i));
+                    else if (ctx->mode == MODE_COLUMN)
+                        printf("%10i", chidb_column_int(stmt,i));
+                }
+                else if(coltype == SQL_NULL)
+                {
+                    /* Print nothing */
+                    if (ctx->mode == MODE_COLUMN)
+                        printf("          ");
+                }
+                else
+                {
+                    int len;
+                    if((coltype - 13) % 2 != 0)
+                    {
+                        printf("ERROR: Column %i returned an invalid type.\n", i);
+                        break;
+                    }
+                    const char *text = chidb_column_text(stmt,i);
+                    len = strlen(text);
+                    if(len != (coltype-13)/2)
+                    {
+                        printf("ERROR: THe length (%i) of the text in column %i does not match its type (%i).\n", len, i, coltype);
+                        break;
+                    }
+
+                    if(ctx->mode == MODE_LIST)
+                        printf("%s", text);
+                    else if (ctx->mode == MODE_COLUMN)
+                        printf("%-10.10s", text);
                 }
             }
             printf("\n");
@@ -130,51 +208,117 @@ int chidb_shell_handle_sql(chidb_shell_ctx_t *ctx, const char *sql)
 }
 
 
-int chidb_shell_handle_cmd_parse(chidb_shell_ctx_t *ctx, const char *s)
+int chidb_shell_handle_cmd_open(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens)
+{
+    int rc;
+    chidb *newdb;
+
+    if(ntokens != 2)
+    {
+    	usage_error(e, "Invalid arguments");
+    	return 1;
+    }
+
+    rc = chidb_open(tokens[1], &newdb);
+
+	if (rc != CHIDB_OK)
+    {
+        fprintf(stderr, "ERROR: Could not open file %s or file is not well formed.\n", tokens[1]);
+        return rc;
+    }
+
+
+    if(ctx->db)
+    {
+    	chidb_close(ctx->db);
+    	free(ctx->dbfile);
+    }
+
+    ctx->db = newdb;
+    ctx->dbfile = strdup(tokens[1]);
+
+    return CHIDB_OK;
+}
+
+
+int chidb_shell_handle_cmd_parse(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens)
 {
     chisql_statement_t *sql_stmt;
     int rc;
 
-    printf("Provided SQL: %s\n", s);
+    if(ntokens != 2)
+    {
+    	usage_error(e, "Invalid arguments");
+    	return 1;
+    }
 
-    rc = chisql_parser(s, &sql_stmt);
+    rc = chisql_parser(tokens[1], &sql_stmt);
 
     if (rc != CHIDB_OK)
+    {
         return rc;
+    }
 
-    printf("  Parsed SQL   \n");
-    printf("---------------\n");
     chisql_stmt_print(sql_stmt);
     printf("\n");
 
-    return 0;
+    return CHIDB_OK;
 }
 
-int chidb_shell_handle_cmd_dbmrun(chidb_shell_ctx_t *ctx, const char *s)
+int chidb_shell_handle_cmd_dbmrun(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens)
 {
     int rc;
     chidb_dbm_file_t *dbmf;
+    bool results = false;
 
-    if(access(s, F_OK) == -1)
+    if(ntokens != 2)
     {
-        fprintf(stderr, "ERROR: File does not exist: ##%s##\n", s);
+    	usage_error(e, "Invalid arguments");
+    	return 1;
+    }
+
+    if(access(tokens[1], F_OK) == -1)
+    {
+        fprintf(stderr, "ERROR: File does not exist: %s\n", tokens[1]);
         return 1;
     }
 
-    rc = chidb_dbm_file_load(s, &dbmf, ctx->db);
+    rc = chidb_dbm_file_load(tokens[1], &dbmf, ctx->db);
 
     if(rc != CHIDB_OK)
     {
-        fprintf(stderr, "ERROR: Could not load DBM file %s\n", s);
+        fprintf(stderr, "ERROR: Could not load DBM file %s\n", tokens[1]);
         return 1;
     }
 
-    rc = chidb_dbm_file_run(dbmf);
-
-    if(rc != CHIDB_OK)
+    do
     {
-        fprintf(stderr, "ERROR: Could not run DBM file %s\n", s);
-        return 1;
+        rc = chidb_dbm_file_run(dbmf);
+
+        if(rc == CHIDB_ROW)
+        {
+            if(!results)
+            {
+                printf("RESULT ROWS\n");
+                printf("-----------\n");
+                results = true;
+            }
+
+            chidb_dbm_file_print_rr(dbmf);
+            printf("\n");
+        }
+        else if (rc != CHIDB_DONE)
+        {
+            fprintf(stderr, "ERROR: Error while running DBM file %s\n", tokens[1]);
+            return 1;
+        }
+    } while (rc != CHIDB_DONE);
+
+    if(results)
+        printf("\n");
+    else
+    {
+        printf("This program produced no result rows.\n\n");
     }
 
     chidb_dbm_file_print_program(dbmf);
@@ -184,4 +328,55 @@ int chidb_shell_handle_cmd_dbmrun(chidb_shell_ctx_t *ctx, const char *s)
     return 0;
 }
 
+int chidb_shell_handle_cmd_headers(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens)
+{
+    if(ntokens != 2)
+    {
+    	usage_error(e, "Invalid arguments");
+    	return 1;
+    }
+
+    if(strcmp(tokens[1],"on")==0)
+        ctx->header = true;
+    else if(strcmp(tokens[1],"off")==0)
+        ctx->header = false;
+    else
+    {
+    	usage_error(e, "Invalid argument");
+    	return 1;
+    }
+
+    return CHIDB_OK;
+}
+
+int chidb_shell_handle_cmd_mode(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens)
+{
+    if(ntokens != 2)
+    {
+    	usage_error(e, "Invalid arguments");
+    	return 1;
+    }
+
+    if(strcmp(tokens[1],"list")==0)
+        ctx->mode = MODE_LIST;
+    else if(strcmp(tokens[1],"column")==0)
+        ctx->mode = MODE_COLUMN;
+    else
+    {
+    	usage_error(e, "Invalid argument");
+    	return 1;
+    }
+
+    return CHIDB_OK;
+}
+
+int chidb_shell_handle_cmd_help(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens)
+{
+    for(int h=0; handlers[h].name != NULL; h++)
+    {
+    	fprintf(stderr, "%s\n", handlers[h].help);
+    }
+
+    return CHIDB_OK;
+}
 

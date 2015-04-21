@@ -4,31 +4,6 @@
 #include <check.h>
 #include "check_common.h"
 
-FILE *copy(const char *from, const char *to)
-{
-    FILE *fromf, *tof;
-    char ch;
-
-    if( (fromf = fopen(from, "rb")) == NULL || (tof = fopen(to, "wb")) == NULL)
-        return NULL;
-
-    /* copy the file */
-    while(!feof(fromf))
-    {
-        ch = fgetc(fromf);
-        if(ferror(fromf))
-            return NULL;
-        fputc(ch, tof);
-        if(ferror(tof))
-            return NULL;
-    }
-
-    if(fclose(fromf)==EOF || fclose(tof)==EOF)
-        return NULL;
-
-    return tof;
-}
-
 char *database_file_path(const char *fname)
 {
     char *f;

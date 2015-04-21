@@ -41,6 +41,7 @@
 #define UTIL_H_
 
 #include "btree.h"
+#include <chidb/utils.h>
 
 /*
 ** Read or write a two- and four-byte big-endian integer values.

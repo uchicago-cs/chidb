@@ -3,10 +3,19 @@
 
 #include <chidb/chidb.h>
 
+typedef enum shell_mode
+{
+    MODE_LIST          = 0,
+    MODE_COLUMN        = 1,
+} shell_mode_t;
+
 typedef struct chidb_shell_ctx
 {
     char *dbfile;
-    chidb *db ;
+    chidb *db;
+
+    bool header;
+    shell_mode_t mode;
 
 } chidb_shell_ctx_t;
 

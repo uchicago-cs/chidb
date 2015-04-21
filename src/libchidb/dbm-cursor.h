@@ -42,6 +42,7 @@
 #define DBM_CURSOR_H_
 
 #include "chidbInt.h"
+#include "btree.h"
 
 typedef enum chidb_dbm_cursor_type
 {
@@ -57,5 +58,8 @@ typedef struct chidb_dbm_cursor
     /* Your code goes here */
 
 } chidb_dbm_cursor_t;
+
+/* Cursor function definitions go here */
+
 
 #endif /* DBM_CURSOR_H_ */

@@ -1,0 +1,36 @@
+# Test SELECT-5
+#
+# Same as SELECT-4 but with this query, which returns no rows:
+#
+#   select altcode from numbers where code = 9984;
+# 
+
+USE 1table-largebtree.cdb
+
+%%
+
+# Open the courses table using cursor 0
+Integer      2  0  _  _  
+OpenRead     0  0  4  _
+
+# Store 9984 in register 1
+Integer      9984  1  _  _
+
+# Move the cursor to the entry with key=9984
+# and create a result row with just column "altcode"
+# (should skip this because there is no row with key=9984)
+Seek         0  7  1  _ 
+Column       0  2  2  _
+ResultRow    2  1  _  _
+
+# Close the cursor
+Close        0  _  _  _
+Halt         _  _  _  _
+
+%%
+
+
+%%
+
+R_0 integer 2
+R_1 integer 9984

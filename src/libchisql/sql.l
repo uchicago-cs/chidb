@@ -40,6 +40,7 @@ or 							{ return OR; }
 ">="							{ return GEQ; }
 "<=" 							{ return LEQ; }
 "||"                    { return CONCAT; }
+"|><|"                    { return BOWTIE; }
 references 					{ return REFERENCES; }
 order 						{ return ORDER; }
 by 							{ return BY; }

@@ -53,7 +53,7 @@ chisql_statement_t *__stmt;
 %token PRIMARY FOREIGN KEY DEFAULT CHECK NOT TOKEN_NULL
 %token AND OR NEQ GEQ LEQ REFERENCES ORDER BY DELETE
 %token AS INT DOUBLE CHAR VARCHAR TEXT USING CONSTRAINT
-%token JOIN INNER OUTER LEFT RIGHT NATURAL CROSS UNION
+%token JOIN INNER OUTER LEFT RIGHT NATURAL CROSS UNION BOWTIE
 %token VALUES AUTO_INCREMENT ASC DESC UNIQUE IN ON
 %token COUNT SUM AVG MIN MAX INTERSECT EXCEPT DISTINCT
 %token CONCAT TRUE FALSE CASE WHEN DECLARE BIT GROUP
@@ -431,6 +431,7 @@ join
 	| RIGHT opt_outer JOIN { $$ = SRA_RIGHT_OUTER_JOIN; }
 	| FULL opt_outer JOIN { $$ = SRA_FULL_OUTER_JOIN; }
 	| NATURAL JOIN { $$ = SRA_NATURAL_JOIN; }
+	| BOWTIE { $$ = SRA_NATURAL_JOIN; }
 	;
 
 default_join
@@ -517,57 +518,23 @@ int chisql_stmt_print(chisql_statement_t *stmt)
 
 int chisql_parser(const char *sql, chisql_statement_t **stmt)
 {
-	int rc;
+    int rc;
 
-	__stmt = malloc(sizeof(chisql_statement_t));
+    __stmt = malloc(sizeof(chisql_statement_t));
 
-	YY_BUFFER_STATE my_string_buffer = yy_scan_string (sql);
-	rc = yyparse();
-	yy_delete_buffer (my_string_buffer);
+    YY_BUFFER_STATE my_string_buffer = yy_scan_string (sql);
+    rc = yyparse();
+    yy_delete_buffer (my_string_buffer);
 
-	if (rc == 0)
-	{
-		*stmt = __stmt;
-		return CHIDB_OK;
-	}
-	else
-	{
-		free(__stmt);
-		return CHIDB_EINVALIDSQL;
-	}
+    if (rc == 0)
+    {
+        __stmt->text = strdup(sql);       
+        *stmt = __stmt;
+        return CHIDB_OK;
+    }
+    else
+    {
+        free(__stmt);
+        return CHIDB_EINVALIDSQL;
+    }
 }
-
-/*
-int main(int argc, char **argv) {
-	int i;
-	puts("Welcome to chiSQL! :)");
-	puts("calling init");
-	mock_db_init();
-	for (i=1; i<argc; ++i) {
-		FILE *fp = fopen(argv[i], "r");
-		if (fp) {
-			printf("Parsing file '%s'...\n", argv[i]);
-			stdin = fp;
-			if (!yyparse())
-				printf("Parsed successfully!\n");
-			else
-				printf("Please check your code.\n");
-			fclose(fp);
-		} else {
-			char buf[100];
-			sprintf(buf, "Error opening file '%s'", argv[i]);
-         perror(buf);
-		}
-	}
-	puts("We have the following tables:");
-	show_tables();
-	List_t cols = columns_in_common_str("Foo", "Bar");
-	printf("tables Foo and Bar have %lu %s in common\n", 
-														cols.size, 
-														cols.size > 1 ? "cols" : "col");
-
-	puts("Thanks for using chiSQL :)\n");
-	return 0;
-}
-
-*/

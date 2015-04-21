@@ -47,6 +47,7 @@
 #include "dbm.h"
 #include "dbm-types.h"
 #include "dbm-file.h"
+#include "util.h"
 
 #define MAX_LINE_LEN (256)
 
@@ -54,8 +55,6 @@
 #define LINE_SKIP        (1)
 #define LINE_EOF         (2)
 #define LINE_NEW_SECTION (3)
-
-#define MAX_FILENAME_SIZE (256)
 
 typedef enum dbm_file_sections
 {
@@ -91,64 +90,6 @@ int __chidb_dbm_file_read_line(FILE *f, char* line)
 
 }
 
-int __chidb_dbm_file_tokenize(char *str, char ***tokens)
-{
-    char *s;
-    int ntokens = 0;
-
-    s = str;
-    if (s==NULL)
-        return CHIDB_ENOMEM;
-
-    /* First pass: Add \0 at the end of each token
-     * and count the number of tokens */
-    while(isspace(*s)) s++;
-
-    while(*s != '\0')
-    {
-        ntokens++;
-        if (*s == '"')
-        {
-            s++;
-            while(*s && *s != '"') s++;
-        }
-        else
-            while(*s && !isspace(*s)) s++;
-
-        if(*s != '\0')
-        {
-            *s++ = '\0';
-            while(*s && isspace(*s)) s++;
-        }
-    }
-
-
-    /* Second pass: Create the array of tokens */
-    *tokens = malloc(sizeof(char**) * ntokens);
-
-    s = str;
-    while(isspace(*s)) s++;
-    for(int i=0; i<ntokens; i++)
-    {
-        if (*s == '"')
-        {
-            s++;
-            (*tokens)[i] = s;
-            while(*s && *s != '"') s++;
-        }
-        else
-        {
-            (*tokens)[i] = s;
-            while(*s && !isspace(*s)) s++;
-        }
-
-        s++;
-        while(*s && isspace(*s)) s++;
-    }
-
-    return ntokens;
-}
-
 
 int __chidb_dbm_file_load_db(chidb_dbm_file_t *dbmf, char *line, const char* dbfiledir, const char* genfiledir)
 {
@@ -161,12 +102,10 @@ int __chidb_dbm_file_load_db(chidb_dbm_file_t *dbmf, char *line, const char* dbf
     if (linedup==NULL)
         return CHIDB_ENOMEM;
 
-    ntokens = __chidb_dbm_file_tokenize(linedup, &tokens);
+    ntokens = chidb_tokenize(linedup, &tokens);
 
     if(ntokens != 2)
         return 1;
-
-    dbmf->dbfile = malloc(MAX_FILENAME_SIZE);
 
     if (strcmp(tokens[0], "NO") == 0 && strcmp(tokens[0], "DBFILE"))
     {
@@ -194,11 +133,32 @@ int __chidb_dbm_file_load_db(chidb_dbm_file_t *dbmf, char *line, const char* dbf
     }
     else if (strcmp(tokens[0], "USE") == 0)
     {
-        rc = snprintf(dbmf->dbfile, MAX_FILENAME_SIZE, "%s/%s", dbfiledir, tokens[1]);
-        if (rc >= MAX_FILENAME_SIZE)
-            return CHIDB_ENOMEM;
+        if(dbmf->copyOnUse)
+        {
+            char srcfile[MAX_FILENAME_SIZE];
 
-        dbmf->delete_dbfile = false;
+            rc = snprintf(srcfile, MAX_FILENAME_SIZE, "%s/%s", dbfiledir, tokens[1]);
+            if (rc >= MAX_FILENAME_SIZE)
+                return CHIDB_ENOMEM;
+
+            rc = snprintf(dbmf->dbfile, MAX_FILENAME_SIZE, "%s/%s_%s", genfiledir, dbmf->filename, tokens[1]);
+            if (rc >= MAX_FILENAME_SIZE)
+                return CHIDB_ENOMEM;
+
+            remove(dbmf->dbfile);
+            if(copy(srcfile, dbmf->dbfile) == NULL)
+                return CHIDB_EIO;
+
+            dbmf->delete_dbfile = false;
+        }
+        else
+        {
+            rc = snprintf(dbmf->dbfile, MAX_FILENAME_SIZE, "%s/%s", dbfiledir, tokens[1]);
+            if (rc >= MAX_FILENAME_SIZE)
+                return CHIDB_ENOMEM;
+
+            dbmf->delete_dbfile = false;
+        }
     }
     else
         return 1;
@@ -224,15 +184,18 @@ int __chidb_dbm_file_parse_instruction(char *line, chidb_dbm_op_t *op)
     if (linedup==NULL)
         return CHIDB_ENOMEM;
 
-    ntokens = __chidb_dbm_file_tokenize(linedup, &tokens);
+    ntokens = chidb_tokenize(linedup, &tokens);
 
     if(ntokens != 5)
-        return 1;
+    {
+        free(linedup);
+        return CHIDB_EPARSE;
+    }
 
     int opcode = str_to_opcode(tokens[0]);
 
     if(opcode == -1)
-        return 1;
+        return CHIDB_EPARSE;
 
     op->opcode = opcode;
     op->p1 = tokens[1][0]=='_' ? 0 : atoi(tokens[1]);
@@ -241,17 +204,133 @@ int __chidb_dbm_file_parse_instruction(char *line, chidb_dbm_op_t *op)
     op->p4 = tokens[4][0]=='_' ? NULL : strdup(tokens[4]);
 
     free(linedup);
-    return 0;
+    return CHIDB_OK;
+}
+
+int __chidb_dbm_file_parse_register(char *line, chidb_dbm_file_register_t *reg)
+{
+    char *linedup;
+    char **tokens;
+    int ntokens, nReg;
+
+    linedup = strdup(line);
+    if (linedup==NULL)
+        return CHIDB_ENOMEM;
+
+    ntokens = chidb_tokenize(linedup, &tokens);
+
+    if(!(ntokens == 2 || ntokens == 3))
+    {
+        free(linedup);
+        return CHIDB_EPARSE;
+    }
+
+
+    if (tokens[0][0] != 'R' && tokens[0][1] != '_')
+    {
+        free(linedup);
+        return CHIDB_EPARSE;
+    }
+
+    nReg = atoi(&tokens[0][2]);
+
+    if(nReg < 0)
+    {
+        free(linedup);
+        return CHIDB_EPARSE;
+    }
+
+    reg->nReg = nReg;
+    reg->has_value = false;
+
+    if (strcmp(tokens[1], "unspecified") == 0)
+    {
+        reg->reg.type = REG_UNSPECIFIED;
+    }
+    else if (strcmp(tokens[1], "null") == 0)
+    {
+        reg->reg.type = REG_NULL;
+    }
+    else if (strcmp(tokens[1], "integer") == 0)
+    {
+        reg->reg.type = REG_INT32;
+        if(ntokens == 3)
+        {
+            reg->reg.value.i = atoi(tokens[2]);
+            reg->has_value = true;
+        }
+    }
+    else if (strcmp(tokens[1], "string") == 0)
+    {
+        reg->reg.type = REG_STRING;
+        if(ntokens == 3)
+        {
+            reg->reg.value.s = strdup(tokens[2]);
+            reg->has_value = true;
+        }
+    }
+    else if (strcmp(tokens[1], "binary") == 0)
+    {
+        reg->reg.type = REG_BINARY;
+    }
+    else
+        return CHIDB_EPARSE;
+
+    return CHIDB_OK;
+}
+
+int __chidb_dbm_file_read_rr(char *line, char **rr, int *nCols)
+{
+    int len, i, j;
+    bool skip = true, inQuote = false;
+
+    *nCols = 0;
+
+    len = strlen(line) + 1;
+
+    *rr = malloc(len);
+    i = 0;
+    j = 0;
+    while(i < strlen(line))
+    {
+        if(line[i]!=' ' && skip)
+        {
+            *nCols += 1;
+            skip = false;
+        }
+
+        if(line[i]=='"')
+            inQuote = !inQuote;
+
+        if(!skip)
+            (*rr)[j++] = line[i];
+
+        if(line[i]==' ' && !inQuote)
+        {
+            skip = true;
+        }
+
+        i++;
+    }
+
+    if((*rr)[j-1] == ' ')
+        (*rr)[j-1] = '\0';
+    else
+        (*rr)[j] = '\0';
+
+    return CHIDB_OK;
 }
 
 
+
 int __chidb_dbm_file_load(const char* filename, chidb_dbm_file_t **_dbmf, chidb *db,
-                          const char* dbfiledir, const char* genfiledir)
+                          const char* dbfiledir, const char* genfiledir, bool copyOnUse)
 {
     FILE *f;
     chidb_dbm_op_t op;
-    char line[MAX_LINE_LEN + 1];
-    int rc, opnum = 0;
+    chidb_dbm_file_register_t *reg;
+    char line[MAX_LINE_LEN + 1], *row;
+    int rc, opnum = 0, nCols;
     dbm_file_sections_t section = CHIDB_FILE;
     chidb_dbm_file_t *dbmf;
 
@@ -267,7 +346,12 @@ int __chidb_dbm_file_load(const char* filename, chidb_dbm_file_t **_dbmf, chidb 
         return CHIDB_EIO;
     }
 
+    char *base = strrchr(filename, '/');
+    dbmf->filename = strdup( base ? base+1 : filename );
     dbmf->db = db;
+    dbmf->copyOnUse = copyOnUse;
+    list_init(&dbmf->queryResults);
+    list_init(&dbmf->registers);
 
     while(1)
     {
@@ -281,16 +365,6 @@ int __chidb_dbm_file_load(const char* filename, chidb_dbm_file_t **_dbmf, chidb 
         {
             if (section == CHIDB_FILE)
             {
-                if (dbmf->db == NULL)
-                {
-                    rc = __chidb_dbm_file_load_db(dbmf, "NO DBFILE", dbfiledir, genfiledir);
-                    if (rc != 0)
-                    {
-                        // "Could not create temp DB"
-                        return rc;
-                    }
-                }
-
                 rc = chidb_stmt_init(&dbmf->stmt, dbmf->db);
 
                 if (rc != 0)
@@ -326,12 +400,27 @@ int __chidb_dbm_file_load(const char* filename, chidb_dbm_file_t **_dbmf, chidb 
             chidb_stmt_set_op(&dbmf->stmt, &op, opnum++);
             break;
         case QUERY_RESULT:
-            /* TODO: Load query results */
+            rc = __chidb_dbm_file_read_rr(line, &row, &nCols);
+            if (rc != CHIDB_OK)
+                return rc;
+
+            if (dbmf->stmt.nCols == 0)
+                dbmf->stmt.nCols = nCols;
+            else if(dbmf->stmt.nCols != nCols)
+                return CHIDB_EPARSE;
+
+            list_append(&dbmf->queryResults, row);
             break;
         case REGISTERS:
-            /* TODO: Load expected registers */
+            reg = malloc(sizeof(chidb_dbm_file_register_t));
+            rc = __chidb_dbm_file_parse_register(line, reg);
+            if (rc != CHIDB_OK)
+            {
+                free(reg);
+                return rc;
+            }
+            list_append(&dbmf->registers, reg);
             break;
-
         }
     }
 
@@ -340,23 +429,23 @@ int __chidb_dbm_file_load(const char* filename, chidb_dbm_file_t **_dbmf, chidb 
 
 int chidb_dbm_file_load(const char* filename, chidb_dbm_file_t **dbmf, chidb *db)
 {
-    return __chidb_dbm_file_load(filename, dbmf, db, ".", ".");
+    return __chidb_dbm_file_load(filename, dbmf, db, ".", ".", false);
+}
+
+int chidb_dbm_file_load2(const char* filename, chidb_dbm_file_t **dbmf, const char* dbfiledir, const char* genfiledir, bool copyOnUse)
+{
+    return __chidb_dbm_file_load(filename, dbmf, NULL, dbfiledir, genfiledir, copyOnUse);
 }
 
 int chidb_dbm_file_run(chidb_dbm_file_t *dbmf)
 {
-    int rc;
-
-    rc = chidb_stmt_exec(&dbmf->stmt);
-
-    if (rc != CHIDB_DONE && rc != CHIDB_ROW)
-    {
-        return rc;
-    }
-
-    return CHIDB_OK;
+    return chidb_stmt_exec(&dbmf->stmt);
 }
 
+int chidb_dbm_file_print_rr(chidb_dbm_file_t *dbmf)
+{
+    return chidb_stmt_rr_print(&dbmf->stmt, ',');
+}
 
 int chidb_dbm_file_print_program(chidb_dbm_file_t *dbmf)
 {
@@ -365,6 +454,20 @@ int chidb_dbm_file_print_program(chidb_dbm_file_t *dbmf)
 
 int chidb_dbm_file_close(chidb_dbm_file_t *dbmf)
 {
+    list_iterator_start(&dbmf->queryResults);
+    while (list_iterator_hasnext(&dbmf->queryResults))
+        free(list_iterator_next(&dbmf->queryResults));
+    list_iterator_stop(&dbmf->queryResults);
+    list_destroy(&dbmf->queryResults);
+
+    list_iterator_start(&dbmf->registers);
+    while (list_iterator_hasnext(&dbmf->registers))
+        free(list_iterator_next(&dbmf->registers));
+    list_iterator_stop(&dbmf->registers);
+    list_destroy(&dbmf->registers);
+
+    free(dbmf->filename);
+
     if(dbmf->delete_dbfile)
     {
         remove(dbmf->dbfile);

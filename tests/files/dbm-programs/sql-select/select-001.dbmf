@@ -1,0 +1,60 @@
+# Test SELECT-1
+#
+# Assuming this table:
+#
+#   CREATE TABLE courses(code INTEGER PRIMARY KEY, name TEXT, prof BYTE, dept INTEGER);
+#
+# Run the equivalent of this SQL query:
+#
+#   SELECT name FROM courses WHERE dept = 89;
+#
+# Registers:
+# 0: Contains the "courses" table root page (2)
+# 1: Contains the value we're comparing with (89)
+# 2: Stores the value of "dept"
+# 3: Stores the value of "name"
+
+# This file has a 1-page table, which allows us
+# to test cursors without navigating the tree
+# structure.
+USE 1table-1page.cdb
+
+%%
+
+# Open the courses table using cursor 0
+Integer      2  0  _  _  
+OpenRead     0  0  4  _
+
+# Go to the first entry. If the database is empty,
+# jump to the end of the program
+Rewind       0  9  _  _
+
+# Store 89 in register 1
+Integer      89 1  _  _
+
+# Fetch the value of "dept" (column 3)
+# and store it in R_2. Compare it with 
+# R_1. If not equal, jump. Otherwise, produce
+# a result row by fetching the value of
+# "name" (column 1)
+Column       0  3  2  _ 
+Ne           2  8  1  _
+Column       0  1  3  _
+ResultRow    3  1  _  _
+Next         0  4  _  _
+
+# Close the cursor
+Close        0  _  _  _
+Halt         _  _  _  _
+
+%%
+
+"Programming Languages"
+"Operating Systems"
+
+%%
+
+R_0 integer 2
+R_1 integer 89
+R_2 integer
+R_3 string
