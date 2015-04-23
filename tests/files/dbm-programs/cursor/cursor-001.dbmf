@@ -1,0 +1,40 @@
+# Test CURSOR-1
+#
+# Assuming this table:
+#
+#   CREATE TABLE courses(code INTEGER PRIMARY KEY, name TEXT, prof BYTE, dept INTEGER);
+#
+# With the following rows:
+#
+#   21000  "Programming Languages"   75    89
+#   23500  "Databases"               NULL  42
+#   27500  "Operating Systems"       NULL  89
+#
+# Open and rewind to the first row.
+
+# This file has a 1-page table, which allows us
+# to test cursors without navigating the tree
+# structure.
+USE 1table-1page.cdb
+
+%%
+
+# Open the courses table using cursor 0
+Integer      2  0  _  _  
+OpenRead     0  0  4  _
+
+# Go to the first entry. If the database is empty,
+# jump to the end of the program
+Rewind       0  3  _  _
+
+# Close the cursor
+Close        0  _  _  _
+Halt         _  _  _  _
+
+%%
+
+# No query results
+
+%%
+
+R_0 integer 2

@@ -186,7 +186,7 @@ int chidb_Pager_allocatePage(Pager *pager, npage_t *npage)
  */
 int	chidb_Pager_readPage(Pager *pager, npage_t npage, MemPage **page)
 {
-    if (npage > pager->n_pages)
+    if (npage > pager->n_pages || npage <= 0)
         return CHIDB_EPAGENO;
     int n;
 

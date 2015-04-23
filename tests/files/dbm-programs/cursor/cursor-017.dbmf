@@ -1,0 +1,53 @@
+# Test CURSOR-17
+#
+# Assuming this table:
+#
+#   CREATE TABLE numbers(code INTEGER PRIMARY KEY, textcode TEXT, altcode INTEGER);
+#
+# Position the cursor on the cell with code == 9985 (the file does contain an entry 
+# with code = 9985 in the righmost node of the tree) and then iterate backwards with Prev.
+#
+# This requires that Prev be capable of iterating across pages.
+#
+# Note that this test doesn't check whether the cursor is pointing
+# to valid values or whether it is hitting the right number of entries.
+# Use the sql-select tests for that (basically, you should make sure that
+# this test doesn't crash or loop indefinitely before you move on to the 
+# tests in sql-select) 
+
+# This file has a B-Tree with height 3
+USE 1table-largebtree.cdb
+
+%%
+
+# Open the numbers table using cursor 0
+Integer      2  0  _  _  
+OpenRead     0  0  4  _
+
+# Store the key in register 1
+Integer      9985  1  _  _
+
+# And 0 in register 2
+Integer      0  2  _  _
+
+# Move the cursor to the entry with key=9985
+# If there is no such entry, skip the Prev loop,
+# which also sets R_2 to 42 (if doesn't get set,
+# then Seek didn't work).
+Seek         0  7  1  _ 
+Integer      42 2  _  _
+Prev         0  5  _  _
+
+# Close the cursor
+Close        0  _  _  _
+Halt         _  _  _  _
+
+%%
+
+# No query results
+
+%%
+
+R_0 integer 2
+R_1 integer 9985
+R_2 integer 42

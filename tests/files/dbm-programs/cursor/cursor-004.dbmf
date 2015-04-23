@@ -1,21 +1,20 @@
-# Test SELECT-3
+# Test CURSOR-4
 #
 # Assuming this table:
 #
 #   CREATE TABLE numbers(code INTEGER PRIMARY KEY, textcode TEXT, altcode INTEGER);
 #
-# Run the equivalent of this SQL query:
+# Use a cursor to iterate through every row of the table.
 #
-#   select code from numbers where altcode > 9980;
-#
-
+# Note that this test doesn't check whether the cursor is pointing
+# to valid values, or even whether it hits all the rows in the table.
+# Use the sql-select tests for that (basically, you should make sure that
+# this test doesn't crash or loop indefinitely before you move on to the 
+# tests in sql-select) 
 
 # This file has a B-Tree with height 3, which requires
 # implementing a cursor capable of iterating over
 # the cells of the tree in sequence.
-#
-# Note: This file also has an index on column "altcode",
-#       but we are not using it.
 USE 1table-largebtree.cdb
 
 %%
@@ -26,17 +25,10 @@ OpenRead     0  0  4  _
 
 # Go to the first entry. If the database is empty,
 # jump to the end of the program
-Rewind       0  9  _  _
+Rewind       0  4  _  _
 
-# Store 9980 in register 1
-Integer      9980  1  _  _
-
-# Fetch the  
-Column       0  2  2  _ 
-Le           1  8  2  _
-Key          0  3  _  _
-ResultRow    3  1  _  _
-Next         0  4  _  _
+# Jump back to this same instruction until we're gone through all the rows
+Next         0  3  _  _
 
 # Close the cursor
 Close        0  _  _  _
@@ -44,14 +36,8 @@ Halt         _  _  _  _
 
 %%
 
-597
-6853
-7912
-9861
+# No query results
 
 %%
 
 R_0 integer 2
-R_1 integer 9980
-R_2 integer
-R_3 integer

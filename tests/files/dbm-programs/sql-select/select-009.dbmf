@@ -15,14 +15,14 @@ USE 1table-largebtree.cdb
 
 %%
 
-# Open the courses table using cursor 0
+# Open the numbers table using cursor 0
 Integer      2  0  _  _  
 OpenRead     0  0  4  _
 
 # Store 9980 in register 1
 Integer      9980  1  _  _
 
-# Move the cursor to the first entry with key >= 9980
+# Move the cursor to the first entry with key > 9980
 # (this table does not have an entry with key=9980)
 # and create a result row with just column "altcode"
 # Then, keep moving the cursor forward and producing

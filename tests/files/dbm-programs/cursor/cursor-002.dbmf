@@ -1,0 +1,67 @@
+# Test CURSOR-2
+#
+# Assuming this table:
+#
+#   CREATE TABLE courses(code INTEGER PRIMARY KEY, name TEXT, prof BYTE, dept INTEGER);
+#
+# With the following rows:
+#
+#   21000  "Programming Languages"   75    89
+#   23500  "Databases"               NULL  42
+#   27500  "Operating Systems"       NULL  89
+#
+# Open and rewind to the first row. Then run Next three times.
+# The program is set up such that, if the Next logic is correctly
+# implemented, R_1 will be set to 42. Otherwise, it will be set to 0.
+#
+# Note that this test doesn't check whether the cursor is pointing
+# to valid values. Use the sql-select tests for that (basically, you should make sure that
+# the cursor tests don't crash before you move on to the tests in sql-select) 
+
+# This file has a 1-page table, which allows us
+# to test cursors without navigating the tree
+# structure.
+USE 1table-1page.cdb
+
+%%
+
+# Open the courses table using cursor 0
+Integer      2  0  _  _  
+OpenRead     0  0  4  _
+
+# Set R_1 and R_2 to 0
+Integer      0  1  _  _
+Integer      0  2  _  _
+
+# Go to the first entry. If the database is empty,
+# jump to the end of the program
+Rewind       0  11  _  _
+
+# After this Next, we should be pointing at the second row.
+# If we advance correctly, we should skip the Eq instruction
+# that would take us to the end of the program.
+Next         0  7   _  _
+Eq           1  11  2  _
+
+# Same as before. We should be pointing to the third row after this.
+Next         0  9   _  _
+Eq           1  11  2  _
+
+# Because we're pointing to the last entry of the table, this Next
+# should *not* jump. If it does, R_1 won't be set to 42.
+Next         0  11  _  _
+Integer      42 1   _  _
+
+# Close the cursor
+Close        0  _  _  _
+Halt         _  _  _  _
+
+%%
+
+# No query results
+
+%%
+
+R_0 integer 2
+R_1 integer 42
+R_2 integer 0

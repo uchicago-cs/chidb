@@ -1,0 +1,43 @@
+# Test CURSOR-3
+#
+# Assuming this table:
+#
+#   CREATE TABLE courses(code INTEGER PRIMARY KEY, name TEXT, prof BYTE, dept INTEGER);
+#
+# Use a cursor to iterate through every row of the table.
+#
+# Note that this test doesn't check whether the cursor is pointing
+# to valid values, or even whether it hits all the rows in the table.
+# Use the sql-select tests for that (basically, you should make sure that
+# the cursor tests don't crash or loop indefinitely before you move on 
+# to the tests in sql-select) 
+
+# This file has a 1-page table, which allows us
+# to test cursors without navigating the tree
+# structure.
+USE 1table-1page.cdb
+
+%%
+
+# Open the courses table using cursor 0
+Integer      2  0  _  _  
+OpenRead     0  0  4  _
+
+# Go to the first entry. If the database is empty,
+# jump to the end of the program
+Rewind       0  4  _  _
+
+# Jump back to this same instruction until we've gone through all the rows
+Next         0  3  _  _
+
+# Close the cursor
+Close        0  _  _  _
+Halt         _  _  _  _
+
+%%
+
+# No query results
+
+%%
+
+R_0 integer 2

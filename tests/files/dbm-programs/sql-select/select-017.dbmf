@@ -1,0 +1,84 @@
+# Test SELECT-17
+#
+# Assuming this table:
+#
+#   CREATE TABLE numbers(code INTEGER PRIMARY KEY, textcode TEXT, altcode INTEGER);
+#
+# Same as SELECT-12 but running the following query:
+#
+#   select code from numbers where code > 3055 and code < 3200 order by code desc;
+#
+# i.e., sorting the results in descending order, which tests whether Prev works
+#       correctly across pages.
+#
+
+# This file has a B-Tree with height 3
+#
+# Note: This file also has an index on column "altcode",
+#       but we are not using it.
+USE 1table-largebtree.cdb
+
+%%
+
+# Open the numbers table using cursor 0
+Integer      2  0  _  _  
+OpenRead     0  0  4  _
+
+# Store integers
+Integer      3055 1  _  _
+Integer      3200 2  _  _
+
+# Move the cursor to the first entry with key < 3200
+# Produce result rows and move the cursor back while
+# the key is > 3055
+SeekLt       0  9  2  _ 
+Key          0  3  _  _
+Le           1  9  3  _
+ResultRow    3  1  _  _
+Prev         0  5  _  _
+
+# Close the cursor
+Close        0  _  _  _
+Halt         _  _  _  _
+%%
+
+3194
+3187
+3186
+3179
+3177
+3175
+3173
+3169
+3168
+3164
+3163
+3160
+3156
+3153
+3148
+3145
+3129
+3128
+3127
+3124
+3117
+3116
+3114
+3108
+3094
+3092
+3086
+3085
+3078
+3077
+3065
+3057
+3056
+
+%%
+
+R_0 integer 2
+R_1 integer 3055
+R_2 integer 3200
+R_3 integer 3053

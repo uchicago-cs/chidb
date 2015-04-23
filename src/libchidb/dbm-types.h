@@ -66,6 +66,8 @@
         OP(Seek)        \
         OP(SeekGt)      \
         OP(SeekGe)      \
+        OP(SeekLt)      \
+        OP(SeekLe)      \
         OP(Column)      \
         OP(Key)         \
         OP(Integer)     \
@@ -84,7 +86,7 @@
         OP(IdxGe)       \
         OP(IdxLt)       \
         OP(IdxLe)       \
-        OP(IdxKey)      \
+        OP(IdxPKey)     \
         OP(IdxInsert)   \
         OP(CreateTable) \
         OP(CreateIndex) \

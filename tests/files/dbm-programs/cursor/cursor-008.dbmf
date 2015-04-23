@@ -1,0 +1,43 @@
+# Test CURSOR-8
+#
+# Assuming this table:
+#
+#   CREATE TABLE numbers(code INTEGER PRIMARY KEY, textcode TEXT, altcode INTEGER);
+#
+# Same as CURSOR-7 but iterating over all cells with code > 9985 (using SeekGt to position the cursor)
+
+# This file has a B-Tree with height 3
+USE 1table-largebtree.cdb
+
+%%
+
+# Open the numbers table using cursor 0
+Integer      2  0  _  _  
+OpenRead     0  0  4  _
+
+# Store the key in register 1
+Integer      9985  1  _  _
+
+# And 0 in register 2
+Integer      0  2  _  _
+
+# Move the cursor to the first entry with key > 9985
+# (this table does have an entry with key=9985)
+# and keep moving forward.
+SeekGt       0  7  1  _ 
+Integer      42 2  _  _
+Next         0  5  _  _
+
+# Close the cursor
+Close        0  _  _  _
+Halt         _  _  _  _
+
+%%
+
+# No query results
+
+%%
+
+R_0 integer 2
+R_1 integer 9985
+R_2 integer 42

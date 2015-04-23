@@ -16,7 +16,7 @@
 #   (tests 4-11 use only the Right-Page pointer to get to the key)
 # - Iterating through the range of keys involves two types of backtracking:
 #   from the leaf node up to the parent node, and from the leaf node all
-#   the way to the node.
+#   the way to the root.
 #
 # The relevant parts of the tree are the following: (numbers represent page numbers)
 #
@@ -45,7 +45,7 @@ USE 1table-largebtree.cdb
 
 %%
 
-# Open the courses table using cursor 0
+# Open the numbers table using cursor 0
 Integer      2  0  _  _  
 OpenRead     0  0  4  _
 

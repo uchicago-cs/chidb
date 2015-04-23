@@ -9,7 +9,7 @@ USE 1table-largebtree.cdb
 
 %%
 
-# Open the courses table using cursor 0
+# Open the numbers table using cursor 0
 Integer      2  0  _  _  
 OpenRead     0  0  4  _
 

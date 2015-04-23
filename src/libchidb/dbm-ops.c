@@ -42,6 +42,7 @@
 #include "btree.h"
 #include "record.h"
 
+
 /* Function pointer for dispatch table */
 typedef int (*handler_function)(chidb_stmt *stmt, chidb_dbm_op_t *op);
 
@@ -157,6 +158,20 @@ int chidb_dbm_op_SeekGe (chidb_stmt *stmt, chidb_dbm_op_t *op)
     return CHIDB_OK;
 }
 
+int chidb_dbm_op_SeekLt (chidb_stmt *stmt, chidb_dbm_op_t *op)
+{
+    /* Your code goes here */
+
+    return CHIDB_OK;
+}
+
+
+int chidb_dbm_op_SeekLe (chidb_stmt *stmt, chidb_dbm_op_t *op)
+{
+    /* Your code goes here */
+
+    return CHIDB_OK;
+}
 
 int chidb_dbm_op_Column (chidb_stmt *stmt, chidb_dbm_op_t *op)
 {
@@ -272,51 +287,88 @@ int chidb_dbm_op_Ge (chidb_stmt *stmt, chidb_dbm_op_t *op)
 }
 
 
+/* IdxGt p1 p2 p3 *
+ *
+ * p1: cursor
+ * p2: jump addr
+ * p3: register containing value k
+ * 
+ * if (idxkey at cursor p1) > k, jump
+ */
 int chidb_dbm_op_IdxGt (chidb_stmt *stmt, chidb_dbm_op_t *op)
 {
-    /* Your code goes here */
-
-    return CHIDB_OK;
+  fprintf(stderr,"todo: chidb_dbm_op_IdxGt\n");
+  exit(1);
 }
 
-
+/* IdxGe p1 p2 p3 *
+ *
+ * p1: cursor
+ * p2: jump addr
+ * p3: register containing value k
+ * 
+ * if (idxkey at cursor p1) >= k, jump
+ */
 int chidb_dbm_op_IdxGe (chidb_stmt *stmt, chidb_dbm_op_t *op)
 {
-    /* Your code goes here */
-
-    return CHIDB_OK;
+  fprintf(stderr,"todo: chidb_dbm_op_IdxGe\n");
+  exit(1);
 }
 
-
+/* IdxLt p1 p2 p3 *
+ *
+ * p1: cursor
+ * p2: jump addr
+ * p3: register containing value k
+ * 
+ * if (idxkey at cursor p1) < k, jump
+ */
 int chidb_dbm_op_IdxLt (chidb_stmt *stmt, chidb_dbm_op_t *op)
 {
-    /* Your code goes here */
-
-    return CHIDB_OK;
+  fprintf(stderr,"todo: chidb_dbm_op_IdxLt\n");
+  exit(1);
 }
 
-
+/* IdxLe p1 p2 p3 *
+ *
+ * p1: cursor
+ * p2: jump addr
+ * p3: register containing value k
+ * 
+ * if (idxkey at cursor p1) <= k, jump
+ */
 int chidb_dbm_op_IdxLe (chidb_stmt *stmt, chidb_dbm_op_t *op)
 {
-    /* Your code goes here */
-
-    return CHIDB_OK;
+  fprintf(stderr,"todo: chidb_dbm_op_IdxLe\n");
+  exit(1);
 }
 
 
-int chidb_dbm_op_IdxKey (chidb_stmt *stmt, chidb_dbm_op_t *op)
+/* IdxPKey p1 p2 * *
+ *
+ * p1: cursor
+ * p2: register
+ *
+ * store pkey from (cell at cursor p1) in (register at p2)
+ */
+int chidb_dbm_op_IdxPKey (chidb_stmt *stmt, chidb_dbm_op_t *op)
 {
-    /* Your code goes here */
-
-    return CHIDB_OK;
+  fprintf(stderr,"todo: chidb_dbm_op_IdxKey\n");
+  exit(1);
 }
 
-
+/* IdxInsert p1 p2 p3 *
+ *
+ * p1: cursor
+ * p2: register containing IdxKey
+ * p2: register containing PKey
+ *
+ * add new (IdkKey,PKey) entry in index BTree pointed at by cursor at p1
+ */
 int chidb_dbm_op_IdxInsert (chidb_stmt *stmt, chidb_dbm_op_t *op)
 {
-    /* Your code goes here */
-
-    return CHIDB_OK;
+  fprintf(stderr,"todo: chidb_dbm_op_IdxInsert\n");
+  exit(1);
 }
 
 
@@ -358,6 +410,4 @@ int chidb_dbm_op_Halt (chidb_stmt *stmt, chidb_dbm_op_t *op)
 
     return CHIDB_OK;
 }
-
-
 
