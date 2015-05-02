@@ -18,21 +18,20 @@ CREATE create-table.cdb
 Integer      1  0  _  _  
 OpenWrite    0  0  5  _
 
-# Create a new B-Tree, store its root page in register 1
-CreateTable  1  _  _  _
+# Create a new B-Tree, store its root page in register 4
+CreateTable  4  _  _  _
 
 # Create the rest of the record
-String       5  2  _  "table"
+String       5  1  _  "table"
+String       8  2  _  "products"
 String       8  3  _  "products"
-String       8  4  _  "products"
-SCopy        1  5  _  _
-String       73 6  _  "CREATE TABLE products(code INTEGER PRIMARY KEY, name TEXT, price INTEGER)"
+String       73 5  _  "CREATE TABLE products(code INTEGER PRIMARY KEY, name TEXT, price INTEGER)"
 
-MakeRecord   2  5  7  _
-Integer      1  8  _  _
+MakeRecord   1  5  6  _
+Integer      1  7  _  _
 
 # Insert the new record
-Insert       0  7  8  _
+Insert       0  6  7  _
 
 # Close the cursor
 Close        0  _  _  _
@@ -44,11 +43,10 @@ Close        0  _  _  _
 %%
 
 R_0 integer 1
-R_1 integer
-R_2 string "table"
+R_1 string "table"
+R_2 string "products"
 R_3 string "products"
-R_4 string "products"
-R_5 integer
-R_6 string "CREATE TABLE products(code INTEGER PRIMARY KEY, name TEXT, price INTEGER)"   
-R_7 binary
-R_8 integer 1 
+R_4 integer
+R_5 string "CREATE TABLE products(code INTEGER PRIMARY KEY, name TEXT, price INTEGER)"   
+R_6 binary
+R_7 integer 1 
