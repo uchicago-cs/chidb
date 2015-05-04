@@ -1,0 +1,84 @@
+# Test INDEX-5
+#
+# Assuming this table and index:
+#
+#   CREATE TABLE numbers(code INTEGER PRIMARY KEY, textcode TEXT, altcode INTEGER);
+#   CREATE INDEX idxNumbers ON numbers(altcode);
+#
+# Run the equivalent of this SQL query:
+#
+#   select textcode from numbers where altcode >= 9910;
+#
+# Where there exists a row with altcode == 9910
+
+# This file has a Table B-Tree with height 3 (rooted at page 2)
+# as well as an Index B-Tree (on column "altcode" of the 'numbers'
+# table), rooted at page 163.
+USE 1table-largebtree.cdb
+
+%%
+
+# Open the numbers table using cursor 0
+# and the index using cursor 1
+Integer      2    0  _  _  
+Integer      163  1  _  _  
+OpenRead     0    0  3  _
+OpenRead     1    1  0  _
+
+# Store 9910 in register 2
+Integer      9910  2  _  _
+
+# Move the index cursor to the smallest entry with KeyIdx>=9910.
+# Get KeyPK, use it to seek into the table, and create a result 
+# row with just column "textcode". Then, move to the next entry in
+# the index (and end if there are no more entries in the index).
+SeekGe       1  11  2  _
+IdxPKey      1  3   _  _
+Seek         0  14  3  _
+Column       0  1   4  _
+ResultRow    4  1   _  _
+Next         1  6   _  _
+
+# Close the cursors
+Close        0  _  _  _
+Close        1  _  _  _
+Halt         0  _  _  _
+
+# The following Halt is only reached if the index contains
+# an invalid entry (a KeyPK that is not found in the Table B-Tree)
+# Note: SQLite would jump back to the index OpenRead, under the
+# assumption that the index may have changed during the DBM's
+# execution. We just consider this to be an error condition.
+Halt         1  _  _  "KeyPK in index not found in table"
+
+
+%%
+
+"PK: 7958 -- IK: 9910"
+"PK: 152 -- IK: 9915"
+"PK: 259 -- IK: 9922"
+"PK: 7642 -- IK: 9938"
+"PK: 6086 -- IK: 9943"
+"PK: 4900 -- IK: 9953"
+"PK: 4561 -- IK: 9957"
+"PK: 6195 -- IK: 9959"
+"PK: 6590 -- IK: 9960"
+"PK: 7142 -- IK: 9964"
+"PK: 4242 -- IK: 9965"
+"PK: 2535 -- IK: 9975"
+"PK: 5689 -- IK: 9978"
+"PK: 5173 -- IK: 9979"
+"PK: 9861 -- IK: 9987"
+"PK: 6853 -- IK: 9988"
+"PK: 597 -- IK: 9990"
+"PK: 7912 -- IK: 9992"
+
+
+%%
+
+R_0 integer 2
+R_1 integer 163
+R_2 integer 9910
+R_3 integer 7912
+R_4 string "PK: 7912 -- IK: 9992"
+

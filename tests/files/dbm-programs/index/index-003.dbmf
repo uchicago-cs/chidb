@@ -1,0 +1,71 @@
+# Test INDEX-3
+#
+# Assuming this table and index:
+#
+#   CREATE TABLE numbers(code INTEGER PRIMARY KEY, textcode TEXT, altcode INTEGER);
+#   CREATE INDEX idxNumbers ON numbers(altcode);
+#
+# Run the equivalent of this SQL query:
+#
+#   select textcode from numbers where altcode = 7266;
+#
+# So, the same as INDEX-1, but with altcode not being unique, which means we need
+# to seek *and* iterate over the index. chidb actually only supports unique indices,
+# so the above query will still only return at most one row. However, the
+# DBM program in this test is closer to the code that SQLite generates.
+#
+
+# This file has a Table B-Tree with height 3 (rooted at page 2)
+# as well as an Index B-Tree (on column "altcode" of the 'numbers'
+# table), rooted at page 163.
+USE 1table-largebtree.cdb
+
+%%
+
+# Open the numbers table using cursor 0
+# and the index using cursor 1
+Integer      2    0  _  _  
+Integer      163  1  _  _  
+OpenRead     0    0  3  _
+OpenRead     1    1  0  _
+
+# Store 7266 in register 2
+Integer      7266  2  _  _
+
+# Move the index cursor to the smallest entry with KeyIdx >= 7266.
+# If KeyIdx > 7266, then jump to the end. Otherwise, continue:
+# get KeyPK, and use it to seek into the table. Then, create a 
+# result row with just column "textcode", and move to the next entry
+# in the index.
+SeekGe       1  12  2  _
+IdxGt        1  12  2  _
+IdxPKey      1  3   _  _
+Seek         0  15  3  _
+Column       0  1   4  _
+ResultRow    4  1   _  _
+Next         1  6   _  _
+
+# Close the cursors
+Close        0  _  _  _
+Close        1  _  _  _
+Halt         0  _  _  _
+
+# The following Halt is only reached if the index contains
+# an invalid entry (a KeyPK that is not found in the Table B-Tree)
+# Note: SQLite would jump back to the index OpenRead, under the
+# assumption that the index may have changed during the DBM's
+# execution. We just consider this to be an error condition.
+Halt         1  _  _  "KeyPK in index not found in table"
+
+
+%%
+
+"PK: 9985 -- IK: 7266"
+
+%%
+
+R_0 integer 2
+R_1 integer 163
+R_2 integer 7266
+R_3 integer 9985
+R_4 string "PK: 9985 -- IK: 7266"

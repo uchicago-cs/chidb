@@ -1,0 +1,63 @@
+# Test INDEX-4
+#
+# Assuming this table and index:
+#
+#   CREATE TABLE numbers(code INTEGER PRIMARY KEY, textcode TEXT, altcode INTEGER);
+#   CREATE INDEX idxNumbers ON numbers(altcode);
+#
+# Run the equivalent of this SQL query:
+#
+#   select textcode from numbers where altcode = 7267;
+#
+# i.e., same as INDEX-3 but with a value of altcode that does not exist
+# in the numbers table.
+#
+
+# This file has a Table B-Tree with height 3 (rooted at page 2)
+# as well as an Index B-Tree (on column "altcode" of the 'numbers'
+# table), rooted at page 163.
+USE 1table-largebtree.cdb
+
+%%
+
+# Open the numbers table using cursor 0
+# and the index using cursor 1
+Integer      2    0  _  _  
+Integer      163  1  _  _  
+OpenRead     0    0  3  _
+OpenRead     1    1  0  _
+
+# Store 7266 in register 2
+Integer      7267  2  _  _
+
+# Move the index cursor to the smallest entry with KeyIdx >= 7267.
+# If KeyIdx > 7267, then jump to the end (this should happen since
+# there is no entry for altcode=7267)
+SeekGe       1  12  2  _
+IdxGt        1  12  2  _
+IdxPKey      1  3   _  _
+Seek         0  15  3  _
+Column       0  1   4  _
+ResultRow    4  1   _  _
+Next         1  6   _  _
+
+# Close the cursors
+Close        0  _  _  _
+Close        1  _  _  _
+Halt         0  _  _  _
+
+# The following Halt is only reached if the index contains
+# an invalid entry (a KeyPK that is not found in the Table B-Tree)
+# Note: SQLite would jump back to the index OpenRead, under the
+# assumption that the index may have changed during the DBM's
+# execution. We just consider this to be an error condition.
+Halt         1  _  _  "KeyPK in index not found in table"
+
+
+%%
+
+%%
+
+R_0 integer 2
+R_1 integer 163
+R_2 integer 7267
