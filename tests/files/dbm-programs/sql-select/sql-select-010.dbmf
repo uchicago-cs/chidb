@@ -1,0 +1,16 @@
+# Test SELECT-10
+#
+# Assumes this table:
+#
+#   CREATE TABLE numbers(code INTEGER PRIMARY KEY, textcode TEXT, altcode INTEGER);
+#
+
+USE 1table-largebtree.cdb
+
+%%
+
+SELECT altcode FROM numbers WHERE code >= 100000;
+
+%%
+   
+# No query results

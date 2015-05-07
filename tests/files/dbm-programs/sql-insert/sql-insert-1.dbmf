@@ -1,0 +1,18 @@
+# Test INSERT-1
+#
+# Assumes the following table:
+#
+#   CREATE TABLE products(code INTEGER PRIMARY KEY, name TEXT, price INTEGER)
+#
+
+USE products-empty.cdb
+
+%%
+
+INSERT INTO products VALUES(1, "Hard Drive", 240);
+
+%%
+
+# No query results
+
+

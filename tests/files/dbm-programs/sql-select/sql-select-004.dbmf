@@ -1,0 +1,17 @@
+# Test SELECT-4
+#
+# Assumes this table:
+#
+#   CREATE TABLE numbers(code INTEGER PRIMARY KEY, textcode TEXT, altcode INTEGER);
+#
+
+USE 1table-largebtree.cdb
+
+%%
+
+SELECT altcode FROM numbers WHERE code = 9985;
+
+%%
+
+7266
+

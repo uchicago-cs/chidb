@@ -1,0 +1,22 @@
+# Test SELECT-6
+#
+# Assumes this table:
+#
+#   CREATE TABLE numbers(code INTEGER PRIMARY KEY, textcode TEXT, altcode INTEGER);
+#
+
+USE 1table-largebtree.cdb
+
+%%
+
+SELECT altcode FROM numbers WHERE code >= 9985;
+
+%%
+
+7266      
+8648      
+1024      
+2377      
+4399      
+
+

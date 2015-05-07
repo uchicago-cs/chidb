@@ -1,0 +1,19 @@
+# Test SELECT-1
+#
+# Assumes this table:
+#
+#   CREATE TABLE courses(code INTEGER PRIMARY KEY, name TEXT, prof BYTE, dept INTEGER);
+#
+
+USE 1table-1page.cdb
+
+%%
+
+SELECT name FROM courses WHERE dept = 89;
+
+%%
+
+"Programming Languages"
+"Operating Systems"
+
+

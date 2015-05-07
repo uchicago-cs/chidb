@@ -1,0 +1,20 @@
+# Test SELECT-2
+#
+# Assumes this table:
+#
+#   CREATE TABLE courses(code INTEGER PRIMARY KEY, name TEXT, prof BYTE, dept INTEGER);
+#
+
+USE 1table-1page.cdb
+
+%%
+
+SELECT * FROM courses;
+
+%%
+
+21000  "Programming Languages"   75    89
+23500  "Databases"               NULL  42
+27500  "Operating Systems"       NULL  89
+
+

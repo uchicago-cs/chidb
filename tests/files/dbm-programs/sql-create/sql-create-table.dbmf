@@ -1,0 +1,13 @@
+# Test CREATE-TABLE
+#
+
+CREATE create-table-sql.cdb
+
+%%
+
+CREATE TABLE products(code INTEGER PRIMARY KEY, name TEXT, price INTEGER);
+
+%%
+
+# No query results
+
