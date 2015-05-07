@@ -32,5 +32,6 @@ int chidb_shell_handle_cmd_parse(chidb_shell_ctx_t *ctx, struct handler_entry *e
 int chidb_shell_handle_cmd_dbmrun(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens);
 int chidb_shell_handle_cmd_mode(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens);
 int chidb_shell_handle_cmd_headers(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens);
+int chidb_shell_handle_cmd_explain(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens);
 
 #endif /* COMMANDS_H_ */

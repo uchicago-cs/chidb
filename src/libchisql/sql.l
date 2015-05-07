@@ -19,6 +19,7 @@ int comment_start_lineno;
 
 %%
 
+explain                     { return EXPLAIN; }
 create 						{ return CREATE; }
 table 						{ return TABLE; }
 insert 						{ return INSERT; }

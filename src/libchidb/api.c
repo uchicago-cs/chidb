@@ -110,12 +110,25 @@ int chidb_prepare(chidb *db, const char *sql, chidb_stmt **stmt)
 
     free(sql_stmt_opt);
 
+    (*stmt)->explain = sql_stmt->explain;
+
     return rc;
 }
 
 int chidb_step(chidb_stmt *stmt)
 {
-    return chidb_stmt_exec(stmt);
+	if(stmt->explain)
+	{
+		if(stmt->pc == stmt->endOp)
+			return CHIDB_DONE;
+		else
+		{
+			stmt->pc++;
+			return CHIDB_ROW;
+		}
+	}
+	else
+		return chidb_stmt_exec(stmt);
 }
 
 int chidb_finalize(chidb_stmt *stmt)
@@ -125,89 +138,190 @@ int chidb_finalize(chidb_stmt *stmt)
 
 int chidb_column_count(chidb_stmt *stmt)
 {
-    return stmt->nCols;
+	if(stmt->explain)
+		return 6;
+	else
+		return stmt->nCols;
 }
 
 int chidb_column_type(chidb_stmt *stmt, int col)
 {
-    if(col < 0 || col >= stmt->nCols)
-        return SQL_NOTVALID;
-    else
-    {
-        chidb_dbm_register_t *r = &stmt->reg[stmt->startRR + col];
+	if(stmt->explain)
+	{
+		chidb_dbm_op_t *op = &stmt->ops[stmt->pc - 1];
 
-        switch(r->type)
-        {
-        case REG_UNSPECIFIED:
-        case REG_BINARY:
-            return SQL_NOTVALID;
-            break;
-        case REG_NULL:
-            return SQL_NULL;
-            break;
-        case REG_INT32:
-            return SQL_INTEGER_4BYTE;
-            break;
-        case REG_STRING:
-            return 2 * strlen(r->value.s) + SQL_TEXT;
-            break;
-        default:
-            return SQL_NOTVALID;
-        }
-    }
+		switch(col)
+		{
+		case 0:
+			return SQL_INTEGER_4BYTE;
+		case 1:
+			return 2 * strlen(opcode_to_str(op->opcode)) + SQL_TEXT;
+		case 2:
+		case 3:
+		case 4:
+			return SQL_INTEGER_4BYTE;
+		case 5:
+			if(op->p4 == NULL)
+				return SQL_NULL;
+			else
+				return 2 * strlen(op->p4) + SQL_TEXT;
+		default:
+			return SQL_NOTVALID;
+		}
+	}
+	else
+	{
+		if(col < 0 || col >= stmt->nCols)
+			return SQL_NOTVALID;
+		else
+		{
+			chidb_dbm_register_t *r = &stmt->reg[stmt->startRR + col];
+
+			switch(r->type)
+			{
+			case REG_UNSPECIFIED:
+			case REG_BINARY:
+				return SQL_NOTVALID;
+				break;
+			case REG_NULL:
+				return SQL_NULL;
+				break;
+			case REG_INT32:
+				return SQL_INTEGER_4BYTE;
+				break;
+			case REG_STRING:
+				return 2 * strlen(r->value.s) + SQL_TEXT;
+				break;
+			default:
+				return SQL_NOTVALID;
+			}
+		}
+	}
 }
 
 const char *chidb_column_name(chidb_stmt* stmt, int col)
 {
-    if(col < 0 || col >= stmt->nCols)
-        return NULL;
-    else
-        return stmt->cols[col];
+	if(stmt->explain)
+	{
+		switch(col)
+		{
+		case 0:
+			return "addr";
+		case 1:
+			return "opcode";
+		case 2:
+			return "p1";
+		case 3:
+			return "p2";
+		case 4:
+			return "p3";
+		case 5:
+			return "p4";
+		default:
+			return NULL;
+		}
+	}
+	else
+	{
+		if(col < 0 || col >= stmt->nCols)
+			return NULL;
+		else
+			return stmt->cols[col];
+	}
 }
 
 int chidb_column_int(chidb_stmt *stmt, int col)
 {
-    if(col < 0 || col >= stmt->nCols)
-    {
-        /* Undefined behaviour */
-        return 0;
-    }
-    else
-    {
-        chidb_dbm_register_t *r = &stmt->reg[stmt->startRR + col];
+	if(stmt->explain)
+	{
+		chidb_dbm_op_t *op = &stmt->ops[stmt->pc - 1];
 
-        if(r->type != REG_INT32)
-        {
-            /* Undefined behaviour */
-            return 0;
-        }
-        else
-        {
-            return r->value.i;
-        }
-    }
+		switch(col)
+		{
+		case 0:
+			return stmt->pc - 1;
+		case 1:
+			return 0; /* Undefined */
+		case 2:
+			return op->p1;
+		case 3:
+			return op->p2;
+		case 4:
+			return op->p3;
+		case 5:
+			return 0; /* Undefined */
+		default:
+			return 0; /* Undefined */
+		}
+	}
+	else
+	{
+		if(col < 0 || col >= stmt->nCols)
+		{
+			/* Undefined behaviour */
+			return 0;
+		}
+		else
+		{
+			chidb_dbm_register_t *r = &stmt->reg[stmt->startRR + col];
+
+			if(r->type != REG_INT32)
+			{
+				/* Undefined behaviour */
+				return 0;
+			}
+			else
+			{
+				return r->value.i;
+			}
+		}
+	}
 }
 
 const char *chidb_column_text(chidb_stmt *stmt, int col)
 {
-    if(col < 0 || col >= stmt->nCols)
-    {
-        /* Undefined behaviour */
-        return NULL;
-    }
-    else
-    {
-        chidb_dbm_register_t *r = &stmt->reg[stmt->startRR + col];
+	if(stmt->explain)
+	{
+		chidb_dbm_op_t *op = &stmt->ops[stmt->pc - 1];
 
-        if(r->type != REG_STRING)
-        {
-            /* Undefined behaviour */
-            return NULL;
-        }
-        else
-        {
-            return r->value.s;
-        }
-    }
+		switch(col)
+		{
+		case 0:
+			return NULL; /* Undefined */
+		case 1:
+			return opcode_to_str(op->opcode);
+		case 2:
+			return NULL; /* Undefined */
+		case 3:
+			return NULL; /* Undefined */
+		case 4:
+			return NULL; /* Undefined */
+		case 5:
+			return op->p4;
+		default:
+			return 0; /* Undefined */
+		}
+	}
+	else
+	{
+		if(col < 0 || col >= stmt->nCols)
+		{
+			/* Undefined behaviour */
+			return NULL;
+		}
+		else
+		{
+			chidb_dbm_register_t *r = &stmt->reg[stmt->startRR + col];
 
+			if(r->type != REG_STRING)
+			{
+				/* Undefined behaviour */
+				return NULL;
+			}
+			else
+			{
+				return r->value.s;
+			}
+		}
+	}
 }

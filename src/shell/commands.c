@@ -18,6 +18,7 @@ struct handler_entry handlers[] =
     HANDLER_ENTRY (mode,      ".mode MODE         Switch display mode. MODE is one of:\n"
     		                  "                     column  Left-aligned columns\n"
     		                  "                     list    Values delimited by | (default)"),
+    HANDLER_ENTRY (explain,   ".explain on|off    Turn output mode suitable for EXPLAIN on or off."),
     HANDLER_ENTRY (help,      ".help              Show this message"),
 
     NULL_ENTRY
@@ -361,6 +362,33 @@ int chidb_shell_handle_cmd_mode(chidb_shell_ctx_t *ctx, struct handler_entry *e,
         ctx->mode = MODE_LIST;
     else if(strcmp(tokens[1],"column")==0)
         ctx->mode = MODE_COLUMN;
+    else
+    {
+    	usage_error(e, "Invalid argument");
+    	return 1;
+    }
+
+    return CHIDB_OK;
+}
+
+int chidb_shell_handle_cmd_explain(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens)
+{
+    if(ntokens != 2)
+    {
+    	usage_error(e, "Invalid arguments");
+    	return 1;
+    }
+
+    if(strcmp(tokens[1],"on")==0)
+    {
+        ctx->header = true;
+        ctx->mode = MODE_COLUMN;
+    }
+    else if(strcmp(tokens[1],"off")==0)
+    {
+        ctx->header = false;
+        ctx->mode = MODE_LIST;
+    }
     else
     {
     	usage_error(e, "Invalid argument");

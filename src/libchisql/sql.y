@@ -57,7 +57,7 @@ chisql_statement_t *__stmt;
 %token VALUES AUTO_INCREMENT ASC DESC UNIQUE IN ON
 %token COUNT SUM AVG MIN MAX INTERSECT EXCEPT DISTINCT
 %token CONCAT TRUE FALSE CASE WHEN DECLARE BIT GROUP
-%token INDEX
+%token INDEX EXPLAIN
 %token <strval> IDENTIFIER
 %token <strval> STRING_LITERAL
 %token <dval> DOUBLE_LITERAL
@@ -96,7 +96,8 @@ sql_queries
 	;
 
 sql_query
-	: sql_line ';' { /*printf("parsed %d valid SQL statements\n", ++num_stmts);*/ }
+	: sql_line ';'         { __stmt->explain = false; }
+	| EXPLAIN sql_line ';' { __stmt->explain = true; }
 	;
 
 sql_line

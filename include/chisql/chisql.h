@@ -17,6 +17,7 @@
 
 typedef struct chisql_statement
 {
+	bool explain;
     char *text;
     uint8_t type;
     union {
