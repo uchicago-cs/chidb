@@ -14,10 +14,14 @@
 #define SQL_INTEGER_4BYTE (4)
 #define SQL_TEXT (13)
 
+#define STMT_CREATE (0)
+#define STMT_SELECT (1)
+#define STMT_INSERT (2)
+#define STMT_DELETE (3)
 
 typedef struct chisql_statement
 {
-	bool explain;
+    bool explain;
     char *text;
     uint8_t type;
     union {

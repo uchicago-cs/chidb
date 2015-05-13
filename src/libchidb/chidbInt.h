@@ -73,6 +73,9 @@ typedef uint32_t chidb_key_t;
 /* Forward declaration */
 typedef struct BTree BTree;
 
+
+  /* code */
+
 /* A chidb database is initially only a BTree.
  * This presuposes that only the btree.c module has been implemented.
  * If other parts of the chidb Architecture are implemented, the

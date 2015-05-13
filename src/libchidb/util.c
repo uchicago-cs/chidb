@@ -281,3 +281,4 @@ int chidb_tokenize(char *str, char ***tokens)
 
     return ntokens;
 }
+

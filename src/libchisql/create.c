@@ -189,11 +189,13 @@ Create_t *Create_fromIndex(Index_t *idx)
 
 void Create_print(Create_t *cre)
 {
+    printf("CREATE ");
     if (cre->t == CREATE_TABLE)
         Table_print(cre->table);
     else
         Index_print(cre->index);
 }
+
 void Create_free(Create_t *cre)
 {
     if (cre->t == CREATE_TABLE)

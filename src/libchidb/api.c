@@ -45,13 +45,18 @@
 #include <chidb/chidb.h>
 #include "dbm.h"
 #include "btree.h"
+#include "record.h"
+#include "util.h"
 
 /* Implemented in codegen.c */
 int chidb_stmt_codegen(chidb_stmt *stmt, chisql_statement_t *sql_stmt);
 
 /* Implemented in optimizer.c */
-int chidb_stmt_optimize(chidb_stmt *stmt, chisql_statement_t *sql_stmt, chisql_statement_t **sql_stmt_opt);
+int chidb_stmt_optimize(chidb_stmt *stmt, 
+			chisql_statement_t *sql_stmt, 
+			chisql_statement_t **sql_stmt_opt);
 
+  /* your code */
 
 int chidb_open(const char *file, chidb **db)
 {
@@ -61,7 +66,6 @@ int chidb_open(const char *file, chidb **db)
     chidb_Btree_open(file, *db, &(*db)->bt);
 
     /* Additional initialization code goes here */
-
     return CHIDB_OK;
 }
 

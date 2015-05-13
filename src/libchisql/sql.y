@@ -18,11 +18,6 @@ int num_stmts = 0;
 
 chisql_statement_t *__stmt;
 
-#define STMT_CREATE (0)
-#define STMT_SELECT (1)
-#define STMT_INSERT (2)
-#define STMT_DELETE (3)
-
 %}
 
 %union {
@@ -52,7 +47,7 @@ chisql_statement_t *__stmt;
 %token CREATE TABLE INSERT INTO SELECT FROM WHERE FULL
 %token PRIMARY FOREIGN KEY DEFAULT CHECK NOT TOKEN_NULL
 %token AND OR NEQ GEQ LEQ REFERENCES ORDER BY DELETE
-%token AS INT DOUBLE CHAR VARCHAR TEXT USING CONSTRAINT
+%token AS INT BYTE DOUBLE CHAR VARCHAR TEXT USING CONSTRAINT
 %token JOIN INNER OUTER LEFT RIGHT NATURAL CROSS UNION BOWTIE
 %token VALUES AUTO_INCREMENT ASC DESC UNIQUE IN ON
 %token COUNT SUM AVG MIN MAX INTERSECT EXCEPT DISTINCT
@@ -114,7 +109,7 @@ create
 	;
 
 create_index
-	: CREATE opt_unique INDEX index_name ON table_name '(' column_name ')'
+        : CREATE opt_unique INDEX index_name ON table_name '(' column_name ')'
 		{ 
 			$$ = Index_make($4, $6, $8); 
 		  	if ($2 == UNIQUE) $$ = Index_makeUnique($$); 
@@ -517,25 +512,37 @@ int chisql_stmt_print(chisql_statement_t *stmt)
 }
 
 
+char *__sql_semicolon(const char *sql)
+{
+  int len = strlen(sql);
+  char *t = strdup(sql);
+  if (t[len-1]!=';') {
+    t = realloc(t,len+2);
+    t[len]=';';
+    t[len+1]=0;
+  }
+  return t;
+}
+
 int chisql_parser(const char *sql, chisql_statement_t **stmt)
 {
-    int rc;
+  int rc;
+  
+  __stmt = malloc(sizeof(chisql_statement_t));
+  char *tsql = __sql_semicolon(sql);
+    
+  YY_BUFFER_STATE my_string_buffer = yy_scan_string (tsql);
+  rc = yyparse();
+  yy_delete_buffer (my_string_buffer);
+  
+  if (rc == 0) {
+    __stmt->text = tsql; /* strdup(sql); */
+    *stmt = __stmt;
+    return CHIDB_OK;
+  } else {
+    fprintf(stderr,"invalid sql: \"%s\"\n", tsql);
+    free(__stmt);
+    return CHIDB_EINVALIDSQL;
+  }
 
-    __stmt = malloc(sizeof(chisql_statement_t));
-
-    YY_BUFFER_STATE my_string_buffer = yy_scan_string (sql);
-    rc = yyparse();
-    yy_delete_buffer (my_string_buffer);
-
-    if (rc == 0)
-    {
-        __stmt->text = strdup(sql);       
-        *stmt = __stmt;
-        return CHIDB_OK;
-    }
-    else
-    {
-        free(__stmt);
-        return CHIDB_EINVALIDSQL;
-    }
 }

@@ -22,6 +22,7 @@ int comment_start_lineno;
 explain                     { return EXPLAIN; }
 create 						{ return CREATE; }
 table 						{ return TABLE; }
+index 						{ return INDEX; }
 insert 						{ return INSERT; }
 into 							{ return INTO; }
 select 						{ return SELECT; }
@@ -47,6 +48,7 @@ order 						{ return ORDER; }
 by 							{ return BY; }
 delete 						{ return DELETE; }
 as 							{ return AS; }
+byte                                                    { return INT; }
 int 							{ return INT; }
 integer                 { return INT; }
 double 						{ return DOUBLE; }

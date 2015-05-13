@@ -38,7 +38,11 @@
  */
 
 #include <chidb/chidb.h>
+#include <chisql/chisql.h>
 #include "dbm.h"
+#include "util.h"
+
+  /* ...code... */
 
 int chidb_stmt_codegen(chidb_stmt *stmt, chisql_statement_t *sql_stmt)
 {
@@ -76,5 +80,6 @@ int chidb_stmt_codegen(chidb_stmt *stmt, chisql_statement_t *sql_stmt)
         chidb_stmt_set_op(stmt, &ops[i], opnum++);
 
     return CHIDB_OK;
+
 }
 

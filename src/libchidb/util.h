@@ -40,6 +40,7 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 
+#include "chidbInt.h"
 #include "btree.h"
 #include <chidb/utils.h>
 
@@ -66,5 +67,6 @@ void chidb_BTree_recordPrinter(BTreeNode *btn, BTreeCell *btc);
 void chidb_BTree_stringPrinter(BTreeNode *btn, BTreeCell *btc);
 
 FILE *copy(const char *from, const char *to);
+
 
 #endif /*UTIL_H_*/
