@@ -13,6 +13,7 @@ struct handler_entry handlers[] =
 {
     HANDLER_ENTRY (open,      ".open FILENAME     Close existing database (if any) and open FILENAME"),
     HANDLER_ENTRY (parse,     ".parse \"SQL\"       Show parse tree for statement SQL"),
+    HANDLER_ENTRY (opt,       ".opt \"SQL\"       Show parse tree and optimized parse tree for statement SQL"),
     HANDLER_ENTRY (dbmrun,    ".dbmrun DBMFILE    Run DBM program in DBMFILE"),
     HANDLER_ENTRY (headers,   ".headers on|off    Switch display of headers on or off in query results"),
     HANDLER_ENTRY (mode,      ".mode MODE         Switch display mode. MODE is one of:\n"
@@ -261,6 +262,45 @@ int chidb_shell_handle_cmd_parse(chidb_shell_ctx_t *ctx, struct handler_entry *e
     }
 
     chisql_stmt_print(sql_stmt);
+    printf("\n");
+
+    return CHIDB_OK;
+}
+
+/* Implemented in optimizer.c */
+int chidb_stmt_optimize(chidb_stmt *stmt,
+            chisql_statement_t *sql_stmt,
+            chisql_statement_t **sql_stmt_opt);
+
+int chidb_shell_handle_cmd_opt(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens)
+{
+    chisql_statement_t *sql_stmt, *sql_stmt_opt;
+    int rc;
+
+    if(ntokens != 2)
+    {
+        usage_error(e, "Invalid arguments");
+        return 1;
+    }
+
+    rc = chisql_parser(tokens[1], &sql_stmt);
+
+    if (rc != CHIDB_OK)
+    {
+        return rc;
+    }
+
+    chisql_stmt_print(sql_stmt);
+    printf("\n\n");
+
+    rc = chidb_stmt_optimize(NULL, sql_stmt, &sql_stmt_opt);
+
+    if(rc != CHIDB_OK)
+    {
+        return rc;
+    }
+
+    chisql_stmt_print(sql_stmt_opt);
     printf("\n");
 
     return CHIDB_OK;

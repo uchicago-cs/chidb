@@ -29,6 +29,7 @@ struct handler_entry
 int chidb_shell_handle_cmd_open(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens);
 int chidb_shell_handle_cmd_help(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens);
 int chidb_shell_handle_cmd_parse(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens);
+int chidb_shell_handle_cmd_opt(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens);
 int chidb_shell_handle_cmd_dbmrun(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens);
 int chidb_shell_handle_cmd_mode(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens);
 int chidb_shell_handle_cmd_headers(chidb_shell_ctx_t *ctx, struct handler_entry *e, const char **tokens, int ntokens);
