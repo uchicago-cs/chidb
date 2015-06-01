@@ -52,7 +52,7 @@
 int chidb_stmt_codegen(chidb_stmt *stmt, chisql_statement_t *sql_stmt);
 
 /* Implemented in optimizer.c */
-int chidb_stmt_optimize(chidb_stmt *stmt, 
+int chidb_stmt_optimize(chidb *db,
 			chisql_statement_t *sql_stmt, 
 			chisql_statement_t **sql_stmt_opt);
 
@@ -102,7 +102,7 @@ int chidb_prepare(chidb *db, const char *sql, chidb_stmt **stmt)
         return rc;
     }
 
-    rc = chidb_stmt_optimize(*stmt, sql_stmt, &sql_stmt_opt);
+    rc = chidb_stmt_optimize((*stmt)->db, sql_stmt, &sql_stmt_opt);
 
     if(rc != CHIDB_OK)
     {

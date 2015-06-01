@@ -268,7 +268,7 @@ int chidb_shell_handle_cmd_parse(chidb_shell_ctx_t *ctx, struct handler_entry *e
 }
 
 /* Implemented in optimizer.c */
-int chidb_stmt_optimize(chidb_stmt *stmt,
+int chidb_stmt_optimize(chidb *db,
             chisql_statement_t *sql_stmt,
             chisql_statement_t **sql_stmt_opt);
 
@@ -283,6 +283,12 @@ int chidb_shell_handle_cmd_opt(chidb_shell_ctx_t *ctx, struct handler_entry *e, 
         return 1;
     }
 
+    if(!ctx->db)
+    {
+        fprintf(stderr, "ERROR: No database is open.\n");
+        return 1;
+    }
+
     rc = chisql_parser(tokens[1], &sql_stmt);
 
     if (rc != CHIDB_OK)
@@ -293,7 +299,7 @@ int chidb_shell_handle_cmd_opt(chidb_shell_ctx_t *ctx, struct handler_entry *e, 
     chisql_stmt_print(sql_stmt);
     printf("\n\n");
 
-    rc = chidb_stmt_optimize(NULL, sql_stmt, &sql_stmt_opt);
+    rc = chidb_stmt_optimize(ctx->db, sql_stmt, &sql_stmt_opt);
 
     if(rc != CHIDB_OK)
     {

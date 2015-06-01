@@ -40,7 +40,7 @@
 #include <chidb/chidb.h>
 #include "dbm-types.h"
 
-int chidb_stmt_optimize(chidb_stmt *stmt, chisql_statement_t *sql_stmt, chisql_statement_t **sql_stmt_opt)
+int chidb_stmt_optimize(chidb *db, chisql_statement_t *sql_stmt, chisql_statement_t **sql_stmt_opt)
 {
     /* Your code goes here */
 
