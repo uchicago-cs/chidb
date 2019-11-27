@@ -13,3 +13,12 @@ Makefile.in
 missing
 test-driver
 stamp-h1
+.*
+*.o
+*.lo
+chidb
+*.la
+src/libchisql/sql-lexer.h
+src/libchisql/sql-parser.h
+src/libchisql/sql-parser.c
+src/libchisql/sql-lexer.c
