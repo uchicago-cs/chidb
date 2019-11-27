@@ -1,0 +1,15 @@
+configure
+*.m4
+.deps/
+*.cache
+config.*
+compile
+depcomp
+install-sh
+libtool
+ltmain.sh
+Makefile
+Makefile.in
+missing
+test-driver
+stamp-h1
