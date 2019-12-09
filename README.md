@@ -1,6 +1,7 @@
 # chidb - A didactic RDBMS
 
 > The chidb documentation is available at <http://chi.cs.uchicago.edu/>
+> 参考实现：<https://github.com/iamslash/chidb>、<https://github.com/youngsamwei/chidb>
 
 ## 构建和安装
 
@@ -20,9 +21,9 @@
 
 * libedit-dev
 
-* flex(lex)
+* flex/lex
 
-* bison(yacc)
+* bison/yacc
 
 ### 生成configure
 
