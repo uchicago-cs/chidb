@@ -210,8 +210,6 @@ int chidb_dbm_op_Null (chidb_stmt *stmt, chidb_dbm_op_t *op)
     /* Your code goes here */
 
     return CHIDB_OK;
-
-    return 0;
 }
 
 
