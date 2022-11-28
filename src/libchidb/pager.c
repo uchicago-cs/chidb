@@ -81,7 +81,7 @@
 int chidb_Pager_open(Pager **pager, const char *filename)
 {
     *pager = malloc(sizeof(Pager));
-    if (pager == NULL)
+    if (*pager == NULL)
         return CHIDB_ENOMEM;
     (*pager)->f = fopen(filename, "r+");
 
@@ -191,7 +191,7 @@ int	chidb_Pager_readPage(Pager *pager, npage_t npage, MemPage **page)
     int n;
 
     *page = malloc(sizeof(MemPage));
-    if (page == NULL)
+    if (*page == NULL)
         return CHIDB_ENOMEM;
     (*page)->npage = npage;
     (*page)->data = calloc(pager->page_size, 1);

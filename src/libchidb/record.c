@@ -283,7 +283,7 @@ int chidb_DBRecord_finalize(DBRecordBuffer *dbrb, DBRecord **dbr)
 int chidb_DBRecord_unpack(DBRecord **dbr, uint8_t *raw)
 {
     *dbr = malloc(sizeof(DBRecord));
-    if (dbr == NULL)
+    if (*dbr == NULL)
         return CHIDB_ENOMEM;
 
     (*dbr)->nfields = 0;
@@ -357,7 +357,7 @@ int chidb_DBRecord_unpack(DBRecord **dbr, uint8_t *raw)
 int chidb_DBRecord_pack(DBRecord *dbr, uint8_t **p)
 {
     *p = malloc(dbr->packed_len);
-    if (p == NULL)
+    if (*p == NULL)
         return CHIDB_ENOMEM;
     (*p)[0] = dbr->packed_len - dbr->data_len;
 
@@ -473,7 +473,7 @@ int chidb_DBRecord_getString(DBRecord *dbr, uint8_t field, char **v)
     int len ;
     chidb_DBRecord_getStringLength(dbr, field, &len);
     *v = malloc(len+1);
-    if (v == NULL)
+    if (*v == NULL)
         return CHIDB_ENOMEM;
     memcpy(*v, &dbr->data[dbr->offsets[field]], len);
     (*v)[len] = '\0';
